@@ -1,6 +1,6 @@
 require_relative 'irc_socket_factory.rb'
 
-class Server
+class IrcServer
   class State
     Fresh = :fresh
     Connected = :connected

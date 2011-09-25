@@ -1,20 +1,20 @@
-require_relative '../src/server.rb'
+require_relative '../src/irc_server.rb'
 
-describe "Server" do
+describe "IrcServer" do
   before :each do
-    @s = Server.new('irc.gamesurge.net')
-    @s.state?.should eq(Server::State::Fresh)
+    @s = IrcServer.new('irc.gamesurge.net')
+    @s.state?.should eq(IrcServer::State::Fresh)
     @s.connect
   end
 
   it "should connect to an address" do
-    @s.state?.should eq(Server::State::Connected)
+    @s.state?.should eq(IrcServer::State::Connected)
   end
 
   it "should provide details about the connection" do
     @s.address.should eq('irc.gamesurge.net')
     @s.port.should eq(6667)
-    s = Server.new('irc.nuclearfallout.net', 5557)
+    s = IrcServer.new('irc.nuclearfallout.net', 5557)
     s.address.should eq('irc.nuclearfallout.net')
     s.port.should eq(5557)
   end
