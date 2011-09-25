@@ -1,6 +1,10 @@
 require 'yaml'
+require_relative 'bot_exceptions'
 
 class Bot
+  class State
+    Connected = 1
+  end
   ConfigPath = 'config.yml'
   Config = {}
 
@@ -17,8 +21,9 @@ class Bot
       raise ConfigError.new('Must have servers configured.')
     end
 
-    if Config[:nick].nil? || Config[:altnick].nil?
-      raise ConfigError.new('Must have nick and altnick configured.')
+    if (Config[:nick] && Config[:altnick] &&
+        Config[:name] && Config[:email]).nil?
+      raise ConfigError.new('Must have nick, altnick, name, and email configured.')
     end
 
     for k, v in Bot::Config[:servers]
@@ -28,10 +33,8 @@ class Bot
     end
   end
 
-  class ConfigError < RuntimeError
-    attr_reader :message
-    def initialize(msg)
-      @message = msg
-    end
+  def self.state?
+    return Bot::State::Connected
   end
+
 end

@@ -1,2 +1,8 @@
 :nick: 'rbb'
-:servers: "gamesurge"
+:altnick: 'rbb_'
+:name: 'Ruby Bot'
+:email: 'dev@null.rb'
+:servers:
+  :gamesurge:
+    :address: 'irc.gamesurge.net'
+
