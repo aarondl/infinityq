@@ -11,8 +11,33 @@ class IrcMockSocket
     end
   end
 
-  def read
-    return "PING :00293923823\r\n" if @state == :user
+  def gets
+    return "PING :00293923823" if @state == :user
     return ''
+  end
+
+  def readlines
+    return ["PING :00293923823"] if @state == :user
+    return ''
+  end
+
+  def close
+    
+  end
+
+  def remote_address
+    self
+  end
+
+  def ip_address
+    '64.31.0.226'
+  end
+
+  def ip_port
+    6667
+  end
+
+  def canonname
+    'irc.gamesurge.net'
   end
 end
