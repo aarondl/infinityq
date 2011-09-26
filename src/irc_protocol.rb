@@ -4,10 +4,7 @@ require_relative 'exceptions'
 class IrcProtocol
   def initialize(filename)
     @events = {}
-    file = IrcProtocolFileFactory.get_file(filename)
-    file.readlines.each do |line|
-      parse_event line.chomp
-    end
+    parse_file(filename)
   end
 
   def clear
@@ -30,20 +27,27 @@ class IrcProtocol
 
   protected
 
+  def parse_file(filename)
+    file = IrcProtocolFileFactory.get_file(filename)
+    file.readlines.each do |line|
+      parse_event line.chomp
+    end
+  end
+
   def parse_event(string)
     raise ArgumentError.new if string.nil? or string.empty?
     args = string.split
 
-    if args.length == 0 or !args[0].match(/^([0-9]+|[a-z]+)$/i)
-      return ProtocolFormatError, args.to_s
+    if args.length == 0 || !args[0].match(/^([0-9]+|[a-z]+)$/i)
+      raise ProtocolFormatError, args.to_s
     end
 
     event = {}
 
     if args.length > 1
-      rules = parse_args(args[1..args.length])
+      rules = parse_args(args[1...args.length].flatten)
       return nil if rules.nil?
-      event[:lex] = rules
+      event[:rules] = rules
     end
 
     key = args[0].to_i == 0 ? args[0].downcase : 'i' + args[0]
@@ -53,15 +57,42 @@ class IrcProtocol
   def parse_args(args)
     rules = []
 
-    args.each do |arg|
-      int = arg.to_i
-      if int != 0
-        rules.push({:rule => :single, :args => int})
-      elsif arg == ':'
-        rules.push({:rule => :remaining})
+    i = 0
+    while i < args.length
+      arg = args[i]
+
+      if arg.start_with?('[')
+
+        j = 0
+        while j < args.length
+          if args[j].end_with?(']')
+            args[i] = args[i][1...args[i].length]
+            args[j] = args[j][0...args[j].length-1]
+            rules.push({ :rule => :optional, :args => parse_args(args[i..j]) })
+            i = j + 1
+            break
+          end
+          j += 1
+        end
+
       else
-        raise ProtocolFormatError, args.to_s
+        csv = false
+        if arg.start_with?('*')
+          csv = true
+          arg = arg[1...arg.length]
+        end
+
+        int = arg.to_i
+        if int != 0
+          int.times do rules.push({:rule => (csv ? :csvlist : :single)}) end
+        elsif arg == ':'
+          rules.push({:rule => :remaining})
+        else
+          raise ProtocolFormatError, args.to_s
+        end
       end
+
+      i += 1
     end
 
     return rules
