@@ -7,3 +7,4 @@ class IrcSocketFactory
       TCPSocket.new(address, port)
   end
 end
+

@@ -57,3 +57,4 @@ describe "IrcServer" do
   end
 
 end
+

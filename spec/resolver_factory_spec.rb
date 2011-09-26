@@ -5,3 +5,4 @@ describe "ResolverFactory" do
     ResolverFactory.resolve '64.31.0.226'
   end
 end
+

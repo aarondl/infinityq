@@ -7,3 +7,4 @@ describe "Bot" do
     Bot::state?.should eq(Bot::State::Connected)    
   end
 end
+

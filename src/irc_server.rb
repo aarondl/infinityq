@@ -63,3 +63,4 @@ class IrcServer
   end
 
 end
+

@@ -41,3 +41,4 @@ class IrcMockSocket
     'irc.gamesurge.net'
   end
 end
+

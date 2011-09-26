@@ -29,3 +29,4 @@ describe "IrcMockSocket" do
     @i.remote_address.ip_port.should eq(6667)
   end
 end
+

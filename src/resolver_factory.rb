@@ -7,3 +7,4 @@ class ResolverFactory
     return Resolv.getname ip
   end
 end
+
