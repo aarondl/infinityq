@@ -1,7 +1,13 @@
+# Used to mock a protocol file
 class IrcMockProtocolFile
+  # Closes the mock protocol file
   def close  
   end
 
+  # Mocks the file's readlines method
+  #
+  # @see File#readlines
+  # @return [Array<String>] An array of strings
   def readlines
     return [
       "PRIVMSG 1 :\r\n",
@@ -15,3 +21,4 @@ class IrcMockProtocolFile
     ]
   end
 end
+

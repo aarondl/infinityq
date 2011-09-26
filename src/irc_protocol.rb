@@ -1,16 +1,30 @@
 require_relative 'irc_protocol_file_factory'
 require_relative 'exceptions'
 
+# The Irc Protocol class
+# This class is responsible for all protocol parsing
 class IrcProtocol
+  # Creates a new IrcProtocol class
+  #
+  # Reads in a .proto file
+  # @param [String] A path to a .proto file to read.
   def initialize(filename)
     @events = {}
     parse_file(filename)
   end
 
+  # Clears the entire event spectrum
+  #
+  # This method clears all the event data
+  # including event handler registration and lexer rules.
   def clear
     @events.clear
   end
 
+  # Checks if the IrcProtocol has an event
+  #
+  # @param [Symbol, String, Fixnum] An event name
+  # @return [Bool] If it has_event
   def has_event?(event)
     if event.kind_of?(String)
       event.downcase!
@@ -21,12 +35,18 @@ class IrcProtocol
     @events.has_key?(event)
   end
 
+  # Gets the number of events.
+  #
+  # @return [Fixnum] The number of events in this IrcProtocol instance.
   def event_count
     @events.count
   end
 
   protected
 
+  # Parses a .proto file
+  #
+  # @param [String] The path to a .proto file to read
   def parse_file(filename)
     file = IrcProtocolFileFactory.get_file(filename)
     file.readlines.each do |line|
@@ -34,6 +54,10 @@ class IrcProtocol
     end
   end
 
+  # Parses a single event line from a .proto file
+  #
+  # This method adds events to the events table.
+  # @param [String] The event line to parse.
   def parse_event(string)
     raise ArgumentError.new if string.nil? or string.empty?
     args = string.split
@@ -54,6 +78,10 @@ class IrcProtocol
     @events.store key.to_sym, event
   end
 
+  # Parses the arguments list of an event line.
+  #
+  # @param [Array<String>] A space-split string of rules.
+  # @return [Array<Hash>] The lexer rules for the arguments to the event line.
   def parse_args(args)
     rules = []
 

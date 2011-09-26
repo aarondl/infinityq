@@ -14,3 +14,4 @@ describe "IrcMockProtocolFile" do
     expect { IrcMockProtocolFile.new().close }.to_not raise_error
   end
 end
+

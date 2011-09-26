@@ -9,3 +9,4 @@ describe "IrcProtocolFileFactory" do
     end
   end
 end
+

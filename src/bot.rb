@@ -1,13 +1,21 @@
 require 'yaml'
 require_relative 'exceptions'
 
+# Ruby IRC Bot main class
 class Bot
+  # Used to define the bot's current state
   class State
+    # Connected state
     Connected = 1
   end
+  # The static config path to the config file
   ConfigPath = 'config.yml'
+  # The config hash that will contain the config details
   Config = {}
 
+  # Reads a config from a file.
+  #
+  # @param [Path] The path to the config file, falls back to Bot::ConfigPath
   def self.read_config(path = nil)
     hash = YAML::load_file(path || ConfigPath)
     Config.clear
@@ -16,6 +24,7 @@ class Bot
     end
   end
 
+  # Starts the bot
   def self.start
     if Config[:servers].nil?
       raise ConfigError, 'Must have servers configured.'
@@ -33,6 +42,9 @@ class Bot
     end
   end
 
+  # Gets the state of the bot
+  #
+  # @return [Bot::State] The current bot state
   def self.state?
     return Bot::State::Connected
   end
