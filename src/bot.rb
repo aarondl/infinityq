@@ -15,7 +15,8 @@ class Bot
 
   # Reads a config from a file.
   #
-  # @param [Path] The path to the config file, falls back to Bot::ConfigPath
+  # @param [String] The path to the config file, falls back to Bot::ConfigPath
+  # @return [nil] Nil
   def self.read_config(path = nil)
     hash = YAML::load_file(path || ConfigPath)
     Config.clear
@@ -25,6 +26,8 @@ class Bot
   end
 
   # Starts the bot
+  #
+  # @return [nil] Nil
   def self.start
     if Config[:servers].nil?
       raise ConfigError, 'Must have servers configured.'

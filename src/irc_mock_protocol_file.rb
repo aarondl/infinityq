@@ -1,6 +1,8 @@
 # Used to mock a protocol file
 class IrcMockProtocolFile
   # Closes the mock protocol file
+  #
+  # @return [nil] Nil
   def close  
   end
 

@@ -19,6 +19,7 @@ class IrcServer
   #
   # @param [String] The address of the irc server
   # @param [true, Fixnum] The port of the irc server, defaults to 6667
+  # @return [nil] Nil
   def initialize(address, port = 6667)
     @address = address
     @port = port
@@ -34,6 +35,7 @@ class IrcServer
   # Writes data to the irc server
   #
   # @param [Array] Data chunks to send to the server
+  # @return [nil] Nil
   def write(*data)
     data.each do |d|
       @socket.write(d + "\r\n")
@@ -59,6 +61,7 @@ class IrcServer
   end
 
   # Disconnects from the irc server
+  # @return [nil] Nil
   def disconnect
     @socket.close if @state == State::Connected
     @state = State::Disconnected

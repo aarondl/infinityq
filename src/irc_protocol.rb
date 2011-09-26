@@ -17,6 +17,7 @@ class IrcProtocol
   #
   # This method clears all the event data
   # including event handler registration and lexer rules.
+  # @return [nil] Nil
   def clear
     @events.clear
   end
@@ -47,6 +48,7 @@ class IrcProtocol
   # Parses a .proto file
   #
   # @param [String] The path to a .proto file to read
+  # @return [nil] Nil
   def parse_file(filename)
     file = IrcProtocolFileFactory.get_file(filename)
     file.readlines.each do |line|
@@ -58,6 +60,7 @@ class IrcProtocol
   #
   # This method adds events to the events table.
   # @param [String] The event line to parse.
+  # @return [nil] Nil
   def parse_event(string)
     raise ArgumentError.new if string.nil? or string.empty?
     args = string.split

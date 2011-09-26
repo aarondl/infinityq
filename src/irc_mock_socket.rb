@@ -4,6 +4,7 @@ class IrcMockSocket
   #
   # @param [Address] The hostname or ip address of the server
   # @param [Port] The port number to connect to
+  # @return [nil] Nil
   def initialize(address, port)
     @state = :init
   end
@@ -13,6 +14,7 @@ class IrcMockSocket
   # This particular method uses flipstates
   # to mock the data that comes back from the server
   # @param [Data] The data to send to the server
+  # @return [nil] Nil
   def write(data)
     if data.match /NICK \w+\r\n/
       @state = :nick
@@ -38,13 +40,15 @@ class IrcMockSocket
   end
 
   # Closes the mock socket
+  # @return [nil] Nil
   def close
     
   end
 
   # Gets the remote address structure for the mock socket
   #
-  # @return [IrcMockSocket] The IrcMockSocket fakes {AddrInfo} impl as well.
+  # @see Addrinfo
+  # @return [IrcMockSocket] The IrcMockSocket fakes Addrinfo impl as well.
   def remote_address
     self
   end
