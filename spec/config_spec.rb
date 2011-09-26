@@ -49,6 +49,12 @@ describe "Bot" do
     Bot::Config[:nick].should_not be_nil
   end
 
+  it "should die if a config file cannot be found" do
+    expect {
+      Bot::read_config 'miscellaneousrandompath.yml'
+    }.to raise_error(Errno::ENOENT)
+  end
+
   it "should read a config file" do
     c = YAML::load_file(Bot::ConfigPath)
     Bot::read_config
