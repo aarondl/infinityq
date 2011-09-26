@@ -1,4 +1,4 @@
-require_relative '../src/irc_mock_socket.rb'
+require_relative '../src/irc_mock_socket'
 
 describe "IrcMockSocket" do
   before :each do

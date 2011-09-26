@@ -1,4 +1,4 @@
-require_relative '../src/bot.rb'
+require_relative '../src/bot'
 
 describe "Bot" do
   it "should connect to a server" do

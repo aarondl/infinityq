@@ -1,4 +1,4 @@
-require_relative '../src/irc_mock_protocol_file.rb'
+require_relative '../src/irc_mock_protocol_file'
 
 describe "IrcMockProtocolFile" do
   it "should fetch lines" do

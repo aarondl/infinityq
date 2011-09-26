@@ -1,4 +1,4 @@
-require_relative '../src/irc_protocol_file_factory.rb'
+require_relative '../src/irc_protocol_file_factory'
 
 describe "IrcProtocolFileFactory" do
   it "should return a different class based on the environment settings" do

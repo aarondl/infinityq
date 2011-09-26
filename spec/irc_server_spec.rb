@@ -1,4 +1,4 @@
-require_relative '../src/irc_server.rb'
+require_relative '../src/irc_server'
 
 describe "IrcServer" do
   before :each do

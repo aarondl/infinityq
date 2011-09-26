@@ -1,4 +1,4 @@
-require_relative 'irc_mock_protocol_file.rb'
+require_relative 'irc_mock_protocol_file'
 
 class IrcProtocolFileFactory
   def self.get_file(filename)

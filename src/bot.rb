@@ -1,5 +1,5 @@
 require 'yaml'
-require_relative 'bot_exceptions'
+require_relative 'exceptions'
 
 class Bot
   class State
@@ -18,17 +18,17 @@ class Bot
 
   def self.start
     if Config[:servers].nil?
-      raise ConfigError.new('Must have servers configured.')
+      raise ConfigError, 'Must have servers configured.'
     end
 
     if (Config[:nick] && Config[:altnick] &&
         Config[:name] && Config[:email]).nil?
-      raise ConfigError.new('Must have nick, altnick, name, and email configured.')
+      raise ConfigError, 'Must have nick, altnick, name, and email configured.'
     end
 
     for k, v in Bot::Config[:servers]
       if v[:address].nil?
-        raise ConfigError.new('Servers must have addresses configured')
+        raise ConfigError, 'Servers must have addresses configured.'
       end
     end
   end

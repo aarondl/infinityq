@@ -1,5 +1,5 @@
 require_relative 'irc_protocol_file_factory'
-require_relative 'bot_exceptions'
+require_relative 'exceptions'
 
 class IrcProtocol
   def initialize(filename)

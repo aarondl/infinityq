@@ -1,5 +1,5 @@
-require_relative 'resolver_factory.rb'
-require_relative 'irc_socket_factory.rb'
+require_relative 'resolver_factory'
+require_relative 'irc_socket_factory'
 
 class IrcServer
   class State

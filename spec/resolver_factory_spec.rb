@@ -1,4 +1,4 @@
-require_relative '../src/resolver_factory.rb'
+require_relative '../src/resolver_factory'
 
 describe "ResolverFactory" do
   it "should resolve ip addresses to hostnames" do

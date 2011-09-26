@@ -1,5 +1,5 @@
 require 'yaml'
-require_relative '../src/bot.rb'
+require_relative '../src/bot'
 
 describe "Bot" do
   before :all do
