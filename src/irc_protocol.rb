@@ -30,8 +30,10 @@ class IrcProtocol
     if event.kind_of?(String)
       event.downcase!
       event = 'i' + event if event.to_i != 0
-      event = event.to_sym
+    elsif event.kind_of?(Integer)
+      event = 'i' + event.to_s
     end
+    event = event.to_sym
     
     @events.has_key?(event)
   end

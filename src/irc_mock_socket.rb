@@ -36,7 +36,7 @@ class IrcMockSocket
   # @return [Array<String>] All the data from the socket
   def readlines
     return ["PING :00293923823"] if @state == :user
-    return ''
+    return nil
   end
 
   # Closes the mock socket

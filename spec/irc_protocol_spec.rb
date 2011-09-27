@@ -30,8 +30,9 @@ describe "IrcProtocol" do
     event[:rules][1].should include(:rule => :single)
     event[:rules][2].should include(:rule => :single)
     event[:rules][3].should include(:rule => :remaining)
-    @i.has_event?(:i672).should be_true
-    @i.has_event?(:privmsg).should be_true
+    @i.has_event?(672).should be_true
+    @i.has_event?('672').should be_true
+    @i.has_event?('privmsg').should be_true
   end
 
   it "should parse optional chains" do

@@ -15,6 +15,7 @@ describe "IrcMockSocket" do
   end
 
   it "should read multiple lines at once" do
+    @i.readlines.should be_nil
     @i.write("NICK something\r\n")
     @i.write("USER a 0 * :fraud\r\n")
     @i.readlines.length.should_not eq(0)
