@@ -8,16 +8,16 @@ describe "Bot" do
 
   def init_config
     config = YAML::load(
-      ":nick: 'rbb'\n" +
-      ":altnick: 'rbb_'\n" +
-      ":name: 'rbb_bot'\n" +
-      ":email: 'rbb_bot@gmail.com'\n" +
+      ":nick: 'infinityq'\n" +
+      ":altnick: 'infinityqq'\n" +
+      ":name: 'Infinity Ruby Bot'\n" +
+      ":email: 'inf_bot@gmail.com'\n" +
       ":servers:\n" +
       "  :gamesurge:\n" +
       "    :address: 'irc.gamesurge.net'\n" +
       "    :port: 6667\n" +
-      "    :nick: 'rbb'\n" +
-      "    :altnick: 'rbb2'\n"
+      "    :nick: 'infinity_'\n" +
+      "    :altnick: 'infinity__'\n"
     )
 
     Bot::Config.clear

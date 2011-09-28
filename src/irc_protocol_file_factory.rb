@@ -9,7 +9,7 @@ class IrcProtocolFileFactory
   # @param [String] The path to the file to open
   # @return [File, IrcMockProtocolFile] One of the two depending on environment
   def self.get_file(filename)
-    if ENV['RBB_ENV'] == 'TEST'
+    if ENV['INF_ENV'] == 'TEST'
       return IrcMockProtocolFile.new()
     else
       return File.new(filename, 'r')

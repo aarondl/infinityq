@@ -9,7 +9,7 @@ class IrcSocketFactory
   # @param [Fixnum] The port to connect to
   # @return [IrcMockSocket, TCPSocket] Either or depending on environment
   def self.get_socket(address, port)
-    return ENV['RBB_ENV'] == 'TEST' ? 
+    return ENV['INF_ENV'] == 'TEST' ? 
       IrcMockSocket.new(address, port) : 
       TCPSocket.new(address, port)
   end

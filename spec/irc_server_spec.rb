@@ -19,7 +19,7 @@ describe "IrcServer" do
     @s.address?.should eq('irc.gamesurge.net')
     @s.port?.should eq(6667)
     ip_addresses =
-      ENV['RBB_ENV'] == 'TEST' ?
+      ENV['INF_ENV'] == 'TEST' ?
       ['64.31.0.226'] :
       `nslookup irc.gamesurge.net`.scan(/Address: (.*[0-9]{1,3})/).flatten
     ip_addresses.should include(@s.ip?)
