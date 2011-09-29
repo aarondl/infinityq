@@ -14,9 +14,14 @@ describe "IrcProtoEvent" do
   end
 
   it "should be able to have event data cleared" do
-    @i.clear
+    @i.clear true
     @i.event_count.should eq(1) #Raw is preserved
     @i.has_event?(:notice).should be_false
+  end
+
+  it "should be able to have event callbacks only cleared" do
+    @i.clear
+    @i.has_event?(:notice).should be_true
   end
 
   it "should generate good tokens" do
@@ -57,9 +62,18 @@ describe "IrcProtoEvent" do
     )
   end
 
+  it "should throw protocol parse errors when bad protocol comes in" do
+    @i.clear
+    @i.register(:notice, lambda {})
+    expect {
+      @i.parse_proto(':fish@lol.com NOTICE')
+    }.to raise_error(IrcProtoEvent::ProtocolParseError)
+    @i.clear
+  end
+
   it "should have a fallback event called raw" do
     @i.has_event?(:raw).should be_true
-    @i.clear
+    @i.clear true
     @i.has_event?(:raw).should be_true
   end
 
@@ -110,6 +124,14 @@ describe "IrcProtoEvent" do
   it "should die when parsing a nil or empty event" do
     expect { @i.send(:parse_event, '') }.to raise_error(ArgumentError)
     expect { @i.send(:parse_event, nil) }.to raise_error(ArgumentError)
+  end
+
+  it "should create helper methods for assembling raw" do
+    @i.respond_to?('Helper_notice').should be_true
+    @i.Helper_notice('Aaron', 'Hey there man').should eq('NOTICE Aaron :Hey there man')
+    @i.Helper_list(['#hi', '#there']).should eq('LIST #hi,#there')
+    @i.clear true
+    @i.respond_to?('Helper_notice').should be_false
   end
 end
 

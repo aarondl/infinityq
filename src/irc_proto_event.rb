@@ -19,11 +19,22 @@ class IrcProtoEvent
   #
   # This method clears all the event data
   # including event handler registration and lexer rules.
+  #
+  # @param [Bool] If true removes the events as well as the callbacks.
   # @return [nil] Nil
-  def clear
-    saveraw = @events[:raw]
-    @events.clear
-    @events[:raw] = saveraw
+  def clear(kill_events = false)
+    if kill_events
+      saveraw = @events[:raw]
+      @events.each do |key, ev|
+        degenerate_helper(key) if key != :raw
+      end
+      @events.clear
+      @events[:raw] = saveraw
+    else
+      @events.each do |key, ev|
+        ev[:callbacks].clear if key != :raw && ev.has_key?(:callbacks)
+      end
+    end
   end
 
   # Parses irc protocol to dispatch events.
@@ -141,7 +152,10 @@ class IrcProtoEvent
   # @return [nil] Nil
   def pull_args(rules, parts, args, offset = 0)
     rules.each do |rule|
+
       name = rule[:name]
+      raise ProtocolParseError, parts.join(' ') if offset >= parts.length
+
       case rule[:rule]
       when :single
         args[name] = parts[offset]
@@ -152,6 +166,7 @@ class IrcProtoEvent
       when :remaining
         parts[offset] = parts[offset][1...parts[offset].length]
         args[name] = parts[offset...parts.length].join(' ')
+        return
       when :optional
         if offset >= parts.length
           args[name] = nil
@@ -160,7 +175,7 @@ class IrcProtoEvent
           offset += 1
         end
       else
-        raise ProtocolParseError, parts.flatten
+        raise ProtocolParseError, parts.join(' ')
       end
     end
   end
@@ -225,8 +240,68 @@ class IrcProtoEvent
       event[:rules] = rules
     end
 
-    key = args[0].to_i == 0 ? args[0].downcase : 'i' + args[0]
-    @events.store key.to_sym, event
+    key = (args[0].to_i == 0 ? args[0].downcase : 'i' + args[0]).to_sym
+    generate_helper(key, event)
+    @events.store key, event
+  end
+
+  # Dynamically attaches a helper method with the
+  # name Helper_EventName() with appropriate arguments
+  # to this instance of IrcProtoEvent
+  #
+  # @param [Symbol] The event name.
+  # @param [Hash] The event hash.
+  # @return [nil] Nil
+  def generate_helper(eventname, eventobj)
+    arglist = ''
+    body = 'return "' + eventname.to_s.upcase + '"'
+
+    if eventobj.has_key?(:rules) && eventobj[:rules].length > 0
+      rules = eventobj[:rules]
+      arglist += '('
+      optional = false
+      first = true
+      i = 0
+      while i < rules.length
+        rule = rules[i]
+        prefix = suffix = ''
+        case rule[:rule]
+        when :csvlist
+          suffix = ".join(',')"
+        when :remaining
+          prefix = ':'
+        when :optional
+          optional = true
+          i = 0
+          rules = rule[:args]
+          next
+        end
+        arglist += ', ' if not first
+        arglist += "#{rule[:name].to_s}"
+        arglist += (optional ? "=''" : '')
+        if optional
+          body += " + (#{rule[:name].to_s}.empty? ? '' : ' #{prefix}' + #{rule[:name]}#{suffix})"
+        else
+          body += " + ' #{prefix}' + #{rule[:name]}#{suffix}"
+        end
+      first = false
+      i += 1
+      end
+      arglist += ')'
+    end
+
+    eval("def self.Helper_#{eventname.to_s}#{arglist}; #{body}; end")
+  end
+
+  # Dynamically destroys a helper method with the name
+  # Helper_EventName() from this instance of IrcProtoEvent
+  #
+  # @param [Symbol] The event name to degenerate the helper for.
+  # @return [nil] Nil
+  def degenerate_helper(eventname)
+    if self.respond_to?("Helper_#{eventname.to_s}")
+      eval("class << self; remove_method(:Helper_#{eventname.to_s}); end")
+    end
   end
 
   # Parses the arguments list of an event line.
