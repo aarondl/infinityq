@@ -127,12 +127,17 @@ describe "IrcProtoEvent" do
     expect { @i.send(:parse_event, nil) }.to raise_error(ArgumentError)
   end
 
+  it "should expose a helper class for assembling raw" do
+    @i.helper.should be_a(IrcProtoEvent::Helper)
+  end
+
   it "should create helper methods for assembling raw" do
-    @i.respond_to?('Helper_notice').should be_true
-    @i.Helper_notice('Aaron', 'Hey there man').should eq('NOTICE Aaron :Hey there man')
-    @i.Helper_list(['#hi', '#there']).should eq('LIST #hi,#there')
+    helper = @i.helper
+    helper.respond_to?('notice_helper').should be_true
+    helper.notice_helper('Aaron', 'Hey there man').should eq('NOTICE Aaron :Hey there man')
+    helper.list_helper(['#hi', '#there']).should eq('LIST #hi,#there')
     @i.clear true
-    @i.respond_to?('Helper_notice').should be_false
+    helper.respond_to?('notice_helper').should be_false
   end
 
   it "should provide the names of notice and privmsg arguments" do

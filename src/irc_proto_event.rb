@@ -5,6 +5,11 @@ require_relative 'token_generator'
 # The Irc ProtoEvent class
 # This class is responsible for all protocol parsing
 class IrcProtoEvent
+  # This class is a dummy class for injecting
+  # raw creation helpers into. It somewhat limits
+  # the scope extensions can play with.
+  class Helper; end
+
   # Creates a new IrcProtoEvent instance
   #
   # Reads in a .proto file
@@ -12,6 +17,7 @@ class IrcProtoEvent
   def initialize(filename)
     @events = {}
     @events[:raw] = {:callbacks => {}}
+    @helper = Helper.new()
     parse_file(filename)
   end
 
@@ -129,6 +135,13 @@ class IrcProtoEvent
     return event[:callbacks].count
   end
 
+  # Retrieves the helper instance for this IrcProtoEvent.
+  #
+  # @return [IrcProtoEvent::Helper] The helper object for this IrcProtoEvent.
+  def helper
+    @helper    
+  end
+
   protected
 
   # Dispatches events to the callbacks
@@ -219,9 +232,9 @@ class IrcProtoEvent
   def to_valid_event(event)
     if event.kind_of?(String)
       event.downcase!
-      event = 'i' + event if event.to_i != 0
+      event = 'e' + event if event.to_i != 0
     elsif event.kind_of?(Integer)
-      event = 'i' + event.to_s
+      event = 'e' + event.to_s
     end
     return event.to_sym
   end
@@ -258,13 +271,13 @@ class IrcProtoEvent
       event[:rules] = rules
     end
 
-    key = (args[0].to_i == 0 ? args[0].downcase : 'i' + args[0]).to_sym
+    key = to_valid_event(args[0])
     generate_helper(key, event)
     @events.store key, event
   end
 
   # Dynamically attaches a helper method with the
-  # name Helper_EventName() with appropriate arguments
+  # name eventname_helper() with appropriate arguments
   # to this instance of IrcProtoEvent
   #
   # @param [Symbol] The event name.
@@ -308,17 +321,17 @@ class IrcProtoEvent
       arglist += ')'
     end
 
-    eval("def self.Helper_#{eventname.to_s}#{arglist}; #{body}; end")
+    eval("def @helper.#{eventname.to_s}_helper#{arglist}; #{body}; end")
   end
 
   # Dynamically destroys a helper method with the name
-  # Helper_EventName() from this instance of IrcProtoEvent
+  # eventname_helper() from this instance of IrcProtoEvent
   #
   # @param [Symbol] The event name to degenerate the helper for.
   # @return [nil] Nil
   def degenerate_helper(eventname)
-    if self.respond_to?("Helper_#{eventname.to_s}")
-      eval("class << self; remove_method(:Helper_#{eventname.to_s}); end")
+    if @helper.respond_to?("#{eventname.to_s}_helper")
+      eval("class << @helper; remove_method(:#{eventname.to_s}_helper); end")
     end
   end
 

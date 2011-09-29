@@ -1,5 +1,7 @@
 require_relative '../src/extension'
 require_relative '../src/irc_proto_event'
+require_relative '../src/function_registrar'
+require_relative '../src/irc_server'
 
 describe "Extension" do
   before :each do
@@ -11,7 +13,9 @@ describe "Extension" do
     end
     @irc_proto = IrcProtoEvent.new('irc.proto')
     @func_registrar = FunctionRegistrar.new(@irc_proto, '!')
-    @ext = BotExtension.new(@irc_proto, @func_registrar)
+    @server = IrcServer.new('irc.gamesurge.net')
+    @server.connect
+    @ext = BotExtension.new(@server, @irc_proto, @func_registrar)
   end
 
   it "should be inherited by aspiring modules" do
@@ -22,7 +26,7 @@ describe "Extension" do
     class BotExtension
       def ext_load; @test = true; end
     end
-    @ext = BotExtension.new(nil, nil)
+    @ext = BotExtension.new(nil, nil, nil)
     @ext.test.should be_true
   end
 
@@ -54,6 +58,13 @@ describe "Extension" do
     @ext.test.should be_nil
     @irc_proto.parse_proto('PRIVMSG Aaron :!help me!')
     @ext.test.should eq('me!')
+  end
+
+  it "should be able to send messages to the server" do
+    class BotExtension
+      def gogo; raw irc.privmsg_helper('Aaron', 'Pewpewpew'); end
+    end
+    @ext.gogo
   end
 
 end
