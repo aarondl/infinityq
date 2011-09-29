@@ -1,6 +1,6 @@
-require 'uuid'
 require_relative 'irc_protocol_file_factory'
 require_relative 'exceptions'
+require_relative 'token_generator'
 
 # The Irc ProtoEvent class
 # This class is responsible for all protocol parsing
@@ -67,7 +67,7 @@ class IrcProtoEvent
   def register(event, callback)
     event = to_valid_event(event)
     if has_event?(event)
-      token = [event, generate_token.to_sym]
+      token = [event, TokenGenerator::generate_token]
       @events[token[0]][:callbacks][token[1]] = callback
       return token
     end
@@ -82,6 +82,34 @@ class IrcProtoEvent
     @events[token[0]][:callbacks].delete token[1]
   end
 
+  # Provides the names of the arguments passed
+  # by the privmsg event if it exists.
+  #
+  # @return [Array<Symbol>] The names of the position based arguments
+  def privmsg_args?
+    if @events.has_key?(:privmsg)
+      return [
+        @events[:privmsg][:rules][0][:name],
+        @events[:privmsg][:rules][1][:name]
+      ]
+    end
+    return nil
+  end
+  
+  # Provides the names of the arguments passed
+  # by the notice event if it exists.
+  #
+  # @return [Array<Symbol>] The names of the position based arguments
+  def notice_args?
+    if @events.has_key?(:notice)
+      return [
+        @events[:notice][:rules][0][:name],
+        @events[:notice][:rules][1][:name]
+      ]
+    end
+    return nil    
+  end
+
   # Checks if the IrcProtoEvent has an event
   #
   # @param [Symbol, String, Fixnum] An event name
@@ -93,8 +121,12 @@ class IrcProtoEvent
   # Gets the number of events.
   #
   # @return [Fixnum] The number of events in this IrcProtoEvent instance.
-  def event_count
-    @events.count
+  def event_count(event = nil)
+    return @events.count if event == nil
+    
+    event = @events[to_valid_event(event)]
+    return 0 if event.has_key?(:callbacks) == false
+    return event[:callbacks].count
   end
 
   protected
@@ -180,20 +212,6 @@ class IrcProtoEvent
     end
   end
 
-  # Generates a randomized token to uniquely identify
-  # event registrations.
-  #
-  # @return [Symbol] A randomized unique token.
-  def generate_token
-    @uuid ||= UUID.new
-    guid = @uuid.generate :compact
-    while guid.length >= 16 && guid.match(/^[0-9]/)
-      guid = guid[1...guid.length]
-    end
-    return generate_token if guid.length < 16
-    return guid.to_sym
-  end
-
   # Returns a symbol that represents this event.
   #
   # @param [String, Integer, Symbol] An object that specifies an event.
@@ -276,7 +294,7 @@ class IrcProtoEvent
           rules = rule[:args]
           next
         end
-        arglist += ', ' if not first
+        arglist += ', ' unless first
         arglist += "#{rule[:name].to_s}"
         arglist += (optional ? "=''" : '')
         if optional

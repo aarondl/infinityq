@@ -13,6 +13,12 @@ describe "IrcProtoEvent" do
     @i.has_event?(:notice).should be_true
   end
 
+  it "should know how many callbacks are registered to an event" do    
+    @i.event_count(:privmsg).should be_zero
+    @i.register(:privmsg, lambda {})
+    @i.event_count(:privmsg).should be(1)
+  end
+
   it "should be able to have event data cleared" do
     @i.clear true
     @i.event_count.should eq(1) #Raw is preserved
@@ -24,13 +30,8 @@ describe "IrcProtoEvent" do
     @i.has_event?(:notice).should be_true
   end
 
-  it "should generate good tokens" do
-    token = @i.send(:generate_token)
-    token.to_s.should match(/^[a-z][a-z0-9]{16,32}$/)
-  end
-
   it "should register and unregister events" do
-    token = @i.register(:notice, lambda { return false })
+    token = @i.register(:notice, lambda {})
     token.should_not be_nil
     @i.unregister(token)
   end
@@ -132,6 +133,11 @@ describe "IrcProtoEvent" do
     @i.Helper_list(['#hi', '#there']).should eq('LIST #hi,#there')
     @i.clear true
     @i.respond_to?('Helper_notice').should be_false
+  end
+
+  it "should provide the names of notice and privmsg arguments" do
+    @i.privmsg_args?.should include(:user, :msg)    
+    @i.notice_args?.should include(:user, :msg)    
   end
 end
 
