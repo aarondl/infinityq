@@ -1,8 +1,8 @@
-require_relative '../src/irc_protocol'
+require_relative '../src/irc_proto_event'
 
-describe "IrcProtocol" do
+describe "IrcProtoEvent" do
   before :each do
-    @i = IrcProtocol.new('irc.proto')
+    @i = IrcProtoEvent.new('irc.proto')
   end
 
   it "should read in a file on instantiation" do
@@ -95,16 +95,16 @@ describe "IrcProtocol" do
   it "should die on badly formatted grammars" do
     expect {
       @i.send(:parse_event, ':11{!~')
-    }.to raise_error(IrcProtocol::ProtocolFormatError)
+    }.to raise_error(IrcProtoEvent::ProtocolFormatError)
     expect {
       @i.send(:parse_event, 'hello !!4 zi2')
-    }.to raise_error(IrcProtocol::ProtocolFormatError)
+    }.to raise_error(IrcProtoEvent::ProtocolFormatError)
     expect {
       @i.send(:parse_event, 'hello :*stuff')
-    }.to raise_error(IrcProtocol::ProtocolFormatError)
+    }.to raise_error(IrcProtoEvent::ProtocolFormatError)
     expect {
       @i.send(:parse_event, 'hello *:stuff')
-    }.to raise_error(IrcProtocol::ProtocolFormatError)
+    }.to raise_error(IrcProtoEvent::ProtocolFormatError)
   end
 
   it "should die when parsing a nil or empty event" do

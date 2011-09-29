@@ -2,10 +2,10 @@ require 'uuid'
 require_relative 'irc_protocol_file_factory'
 require_relative 'exceptions'
 
-# The Irc Protocol class
+# The Irc ProtoEvent class
 # This class is responsible for all protocol parsing
-class IrcProtocol
-  # Creates a new IrcProtocol class
+class IrcProtoEvent
+  # Creates a new IrcProtoEvent instance
   #
   # Reads in a .proto file
   # @param [String] A path to a .proto file to read.
@@ -71,7 +71,7 @@ class IrcProtocol
     @events[token[0]][:callbacks].delete token[1]
   end
 
-  # Checks if the IrcProtocol has an event
+  # Checks if the IrcProtoEvent has an event
   #
   # @param [Symbol, String, Fixnum] An event name
   # @return [Bool] If it has_event
@@ -81,7 +81,7 @@ class IrcProtocol
 
   # Gets the number of events.
   #
-  # @return [Fixnum] The number of events in this IrcProtocol instance.
+  # @return [Fixnum] The number of events in this IrcProtoEvent instance.
   def event_count
     @events.count
   end

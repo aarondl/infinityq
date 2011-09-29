@@ -4,9 +4,11 @@ class Bot
   end
 end
 
-class IrcProtocol
+class IrcProtoEvent
   # Raised when a Protocol parsing error has occurred
   class ProtocolFormatError < StandardError
+  end
+  class ProtocolParseError < StandardError
   end
 end
 
