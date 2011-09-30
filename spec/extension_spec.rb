@@ -12,10 +12,10 @@ describe "Extension" do
       attr_accessor :test
     end
     @irc_proto = IrcProtoEvent.new('irc.proto')
-    @func_registrar = FunctionRegistrar.new(@irc_proto, '!')
+    @fn_registrar = FunctionRegistrar.new(@irc_proto, '!')
     @server = IrcServer.new('irc.gamesurge.net')
     @server.connect
-    @ext = BotExtension.new(@server, @irc_proto, @func_registrar)
+    @ext = BotExtension.new(@server, @irc_proto, @fn_registrar)
   end
 
   it "should be inherited by aspiring modules" do

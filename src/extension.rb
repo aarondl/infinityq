@@ -9,9 +9,9 @@ class Extension
   # @param [IrcProtoEvent] The IrcProtoEvent for the connection.
   # @param [FunctionRegistrar] A function registrar to register functions.
   # @return [Extension] A new extension.
-  def initialize(server, irc_proto, func_registrar)
+  def initialize(server, irc_proto, fn_registrar)
     @irc_proto = irc_proto
-    @func_registrar = func_registrar
+    @fn_registrar = fn_registrar
     @server = server
     @tokens = []
     @funcs = []
@@ -39,7 +39,7 @@ class Extension
   # @param [String, RegExp] A matcher that must pass for the function to fire.
   # @return [nil] Nil
   def function(msgtype, method, matchspec)
-    @funcs.push @func_registrar.register(msgtype, self.method(method), matchspec)
+    @funcs.push @fn_registrar.register(msgtype, self.method(method), matchspec)
     return nil
   end
 
@@ -51,7 +51,7 @@ class Extension
       @irc_proto.unregister(tok)
     end
     @funcs.each do |tok|
-      @func_registrar.unregister(tok)
+      @fn_registrar.unregister(tok)
     end
   end
 
