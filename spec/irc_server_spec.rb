@@ -56,5 +56,12 @@ describe "IrcServer" do
     @s.state?.should eq(IrcServer::State::Disconnected)
   end
 
+  it "should raise an error when writing to a disconnected socket" do
+    @s.disconnect
+    expect {
+    @s.write 'data'
+    }.to raise_error(StandardError)
+  end
+
 end
 

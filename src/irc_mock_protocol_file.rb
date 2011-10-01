@@ -12,6 +12,7 @@ class IrcMockProtocolFile
   # @return [Array<String>] An array of strings
   def readlines
     return [
+      "PING :id\r\n",
       "PRIVMSG user :msg\r\n",
       "NOTICE user :msg\r\n",
       "MODE modestr [limit] [user] [banmask]\r\n",

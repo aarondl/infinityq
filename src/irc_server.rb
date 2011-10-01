@@ -37,6 +37,7 @@ class IrcServer
   # @param [Array] Data chunks to send to the server
   # @return [nil] Nil
   def write(*data)
+    raise StandardError, 'Socket must be connected to write' unless @state == State::Connected
     data.each do |d|
       @socket.write(d + "\r\n")
     end
