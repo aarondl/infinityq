@@ -1,0 +1,9 @@
+PING :id
+PRIVMSG user :msg
+NOTICE user :msg
+MODE modestr [limit] [user] [banmask]
+TOPIC channel [topic]
+NAMES [*channellist]
+LIST [*channellist [server]]
+INVITE [nickname] [channel]
+KICK *channellist *nicklist [comment]

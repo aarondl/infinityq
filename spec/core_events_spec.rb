@@ -5,7 +5,7 @@ require_relative '../src/core_events'
 describe "CoreEvents" do
   before :each do
     @irc = IrcProtoEvent.new('irc.proto')
-    @server = IrcServer.new('irc.gamesurge.net', 7777)
+    @server = IrcServer.new('localhost')
     @server.connect
     @c = CoreEvents.new(@server, @irc)
   end

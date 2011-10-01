@@ -37,7 +37,9 @@ class IrcServer
   # @param [Array] Data chunks to send to the server
   # @return [nil] Nil
   def write(*data)
-    raise StandardError, 'Socket must be connected to write' unless @state == State::Connected
+    unless @state == State::Connected
+      raise IOError, 'Socket must be connected to write'
+    end
     data.each do |d|
       @socket.write(d + "\r\n")
     end
@@ -45,20 +47,17 @@ class IrcServer
 
   # Returns a single line from the server
   #
-  # @return [String] A single line from the server
+  # @return [Array<String>] A single line from the server
   def read
-    return @socket.gets.chomp
-  end
-
-  # Returns all the lines possible in the buffer
-  #
-  # @return [Array<String>] Each line from the buffer
-  def readlines
-    lines = @socket.readlines
-    lines.each_index do |i|
-      lines[i].chomp!
+    unless @state == State::Connected
+      raise IOError, 'Socket must be connected to read'
     end
-    return lines
+    ret = []
+    ret.push @socket.gets.chomp
+    while @socket.nread > 0
+      ret.push @socket.gets.chomp
+    end
+    return ret
   end
 
   # Disconnects from the irc server

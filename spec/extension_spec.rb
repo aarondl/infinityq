@@ -13,7 +13,7 @@ describe "Extension" do
     end
     @irc_proto = IrcProtoEvent.new('irc.proto')
     @fn_registrar = FunctionRegistrar.new(@irc_proto, '!')
-    @server = IrcServer.new('irc.gamesurge.net')
+    @server = IrcServer.new('localhost')
     @server.connect
     @ext = BotExtension.new(@server, @irc_proto, @fn_registrar)
   end

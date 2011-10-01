@@ -1,8 +1,8 @@
-:nick: 'infinityq'
-:altnick: 'infinityqq'
-:name: 'Infinity Ruby Bot'
-:email: 'dev@null.rb'
+:nick: infinityq
+:altnick: infinityqq
+:name: Infinity Ruby Bot
+:email: dev@null.rb
 :servers:
   :gamesurge:
-    :address: 'irc.gamesurge.net'
+    :address: localhost
 
