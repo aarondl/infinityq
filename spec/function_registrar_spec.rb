@@ -5,7 +5,7 @@ describe "FunctionRegistrar" do
     @test = false
     @i = IrcProtoEvent.new('irc.proto')
     @f = FunctionRegistrar.new(@i, '!')
-    @token = @f.register(:private, lambda { |args| @test = args }, 'hi')
+    @token = @f.register(:private, -> args { @test = args }, 'hi')
   end
 
   it "should instantiate with an IrcProtoEvent" do
@@ -24,7 +24,7 @@ describe "FunctionRegistrar" do
 
   it "should register a single event to handle multiple functions" do
     @i.event_count(:privmsg).should eq(1)
-    @f.register(:private, lambda {}, 'hello')
+    @f.register(:private, -> {}, 'hello')
     @i.event_count(:privmsg).should eq(1)
   end
 
@@ -39,13 +39,13 @@ describe "FunctionRegistrar" do
   end
 
   it "should respond to privmsg to a user" do
-    @f.register(:notice, lambda { |args| @test = args}, 'yo')
+    @f.register(:notice, -> args { @test = args}, 'yo')
     @i.parse_proto(':fish@fish.com PRIVMSG Aaron :!hi there')
     @test.should_not be_nil
-    @test.should include(:msg => 'there')
+    @test.should include(msg: 'there')
     @i.parse_proto(':fish@fish.com NOTICE Aaron :!yo budday!')
     @test.should_not be_nil
-    @test.should include(:msg => 'budday!')
+    @test.should include(msg: 'budday!')
   end
 
 end

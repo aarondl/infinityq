@@ -18,9 +18,9 @@ class FunctionRegistrar
     @privmsg_token = nil
     @notice_token = nil
     @functions = {
-      :public => {},
-      :private => {},
-      :notice => {}
+      public: {},
+      private: {},
+      notice: {}
     }
   end
 
@@ -50,7 +50,7 @@ class FunctionRegistrar
     matchspec = Regexp.new('^' + matchspec) if matchspec.kind_of?(String)
 
     localtoken = TokenGenerator::generate_token
-    func[localtoken] = {:match => matchspec, :callback => method}
+    func[localtoken] = {match: matchspec, callback: method}
     return [msgtype, localtoken]
   end
 

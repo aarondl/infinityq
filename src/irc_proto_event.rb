@@ -16,7 +16,7 @@ class IrcProtoEvent
   # @param [String] A path to a .proto file to read.
   def initialize(filename)
     @events = {}
-    @events[:raw] = {:callbacks => {}}
+    @events[:raw] = {callbacks: {}}
     @helper = Helper.new()
     parse_file(filename)
   end
@@ -263,7 +263,7 @@ class IrcProtoEvent
       raise ProtocolFormatError, args.to_s
     end
 
-    event = {:callbacks => {}}
+    event = {callbacks: {}}
 
     if args.length > 1
       rules = parse_args(args[1...args.length].flatten)
@@ -370,7 +370,7 @@ class IrcProtoEvent
       if args[j].end_with?(']')
         args[i] = args[i][1...args[i].length]
         args[j] = args[j][0...args[j].length-1]
-        return {:rule => :optional, :args => parse_args(args[i..j])}, j + 1
+        return {rule: :optional, args: parse_args(args[i..j])}, j + 1
       end
       j += 1
     end
@@ -393,7 +393,7 @@ class IrcProtoEvent
     end
 
     if arg.match(/^[a-z]+$/i)
-      return {:rule => type, :name => arg.to_sym}
+      return {rule: type, name: arg.to_sym}
     else
       raise ProtocolFormatError, arg
     end

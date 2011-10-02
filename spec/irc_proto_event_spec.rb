@@ -15,7 +15,7 @@ describe "IrcProtoEvent" do
 
   it "should know how many callbacks are registered to an event" do    
     @i.event_count(:privmsg).should be_zero
-    @i.register(:privmsg, lambda {})
+    @i.register(:privmsg, -> {})
     @i.event_count(:privmsg).should be(1)
   end
 
@@ -31,7 +31,7 @@ describe "IrcProtoEvent" do
   end
 
   it "should register and unregister events" do
-    token = @i.register(:notice, lambda {})
+    token = @i.register(:notice, -> {})
     token.should_not be_nil
     @i.unregister(token)
   end
@@ -42,30 +42,30 @@ describe "IrcProtoEvent" do
 
   it "should parse irc protocol and dispatch events" do
     arguments = nil
-    @i.register(:notice, lambda { |args| arguments = args })
+    @i.register(:notice, -> args { arguments = args })
     @i.parse_proto(':fish@lol.com NOTICE Aaron :Hey man, wake up!')
     arguments.should_not be_nil
     arguments.should include(
-      :from => 'fish@lol.com',
-      :user => 'Aaron',
-      :msg => 'Hey man, wake up!'
+      from: 'fish@lol.com',
+      user: 'Aaron',
+      msg: 'Hey man, wake up!'
     )
   end
 
   it "should always dispatch to raw" do
     arguments = nil
-    @i.register(:raw, lambda { |args| arguments = args })
+    @i.register(:raw, -> args { arguments = args })
     @i.parse_proto(':fish@lol.com PEWPEW hello there!')
     arguments.should_not be_nil
     arguments.should include(
-      :from => 'fish@lol.com',
-      :raw => 'PEWPEW hello there!'
+      from: 'fish@lol.com',
+      raw: 'PEWPEW hello there!'
     )
   end
 
   it "should throw protocol parse errors when bad protocol comes in" do
     @i.clear
-    @i.register(:notice, lambda {})
+    @i.register(:notice, -> {})
     expect {
       @i.parse_proto(':fish@lol.com NOTICE')
     }.to raise_error(IrcProtoEvent::ProtocolParseError)
@@ -84,7 +84,7 @@ describe "IrcProtoEvent" do
     event.length.should eq(4)
     [[:single, :hi], [:single, :there],
     [:single, :john], [:remaining, :more]].each_with_index do |expect, i|
-      event[i].should include(:rule => expect[0], :name => expect[1])
+      event[i].should include(rule: expect[0], name: expect[1])
     end
     @i.has_event?(672).should be_true
     @i.has_event?('672').should be_true
@@ -92,11 +92,11 @@ describe "IrcProtoEvent" do
 
   it "should parse optional chains" do
     event = @i.send(:parse_event, 'LIST [first [second]]')[:rules][0]
-    event.should include(:rule => :optional, 
-      :args => [
-        {:rule => :single, :name => :first},
-        {:rule => :optional, :args => [
-          {:rule => :single, :name => :second}
+    event.should include(rule: :optional, 
+      args: [
+        {rule: :single, name: :first},
+        {rule: :optional, args: [
+          {rule: :single, name: :second}
         ]}
       ]
     )
@@ -104,7 +104,7 @@ describe "IrcProtoEvent" do
 
   it "should parse csvlists" do
     event = @i.send(:parse_event, 'LIST *listname')[:rules][0]
-    event.should include(:rule => :csvlist, :name => :listname)
+    event.should include(rule: :csvlist, name: :listname)
   end
 
   it "should die on badly formatted grammars" do
