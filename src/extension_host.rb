@@ -60,6 +60,10 @@ class ExtensionHost
     return e
   end
 
+  # Gets an extension object by it's name.
+  #
+  # @param [Symbol] The key to the extension.
+  # @return [Object] The extension object.
   def extension(key)
     return nil unless @extensions.has_key?(key)
     return @extensions[key]

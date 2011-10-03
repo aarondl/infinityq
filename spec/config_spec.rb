@@ -2,22 +2,25 @@ require 'yaml'
 require_relative '../src/bot'
 
 describe "Bot" do
-  before :all do
+  before :each do
     init_config
   end
 
   def init_config
     config = YAML::load(
-      ":nick: 'infinityq'\n" +
-      ":altnick: 'infinityqq'\n" +
-      ":name: 'Infinity Ruby Bot'\n" +
-      ":email: 'inf_bot@gmail.com'\n" +
+      ":nick: infinityq\n" +
+      ":altnick: infinityqq\n" +
+      ":name: Infinity Ruby Bot\n" +
+      ":email: inf_bot@gmail.com\n" +
+      ":proto: irc.proto\n" +
+      ":extensions:\n" +
+      "  -Test1\n" +
       ":servers:\n" +
       "  :gamesurge:\n" +
-      "    :address: 'irc.gamesurge.net'\n" +
+      "    :address: irc.gamesurge.net\n" +
       "    :port: 6667\n" +
-      "    :nick: 'infinity_'\n" +
-      "    :altnick: 'infinity__'\n"
+      "    :nick: infinity_\n" +
+      "    :altnick: infinity__\n"
     )
 
     Bot::Config.clear
@@ -59,24 +62,47 @@ describe "Bot" do
     c = YAML::load_file(Bot::ConfigPath)
     Bot::read_config
     Bot::Config[:nick].should eq(c[:nick])
-    init_config #Restore test data
+  end
+
+  it "should copy global values into the server-specific configs" do
+    c = YAML::load_file(Bot::ConfigPath)
+    Bot::read_config
+    Bot::Config[:servers][:gamesurge][:extensions].should eq(Bot::Config[:extensions])
   end
 
   it "should die if no servers exist" do
     Bot::Config.hash_temp_del(:servers) do
-      expect { Bot::start }.to raise_error(Bot::ConfigError)
+      expect { Bot::validate_config }.to raise_error(Bot::ConfigError)
     end
   end
   
   it "should die if servers have no addresses" do
     Bot::Config[:servers][:gamesurge].hash_temp_del(:address) do
-      expect { Bot::start }.to raise_error(Bot::ConfigError)
+      expect { Bot::validate_config }.to raise_error(Bot::ConfigError)
     end
   end
   
   it "should die if no bot details are configured" do
     Bot::Config.hash_temp_del([:nick, :altnick, :name, :email]) do
-      expect { Bot::start }.to raise_error(Bot::ConfigError)
+      expect { Bot::validate_config }.to raise_error(Bot::ConfigError)
+    end
+  end
+
+  it "should die if no proto file is configured" do
+    Bot::Config.hash_temp_del(:proto) do
+      expect { Bot::validate_config }.to raise_error(Bot::ConfigError)
+    end
+  end
+
+  it "should die if no extension path is configured and extensions are configured" do
+    Bot::Config.hash_temp_del(:extpath) do
+      expect { Bot::validate_config }.to raise_error(Bot::ConfigError)
+    end
+  end
+
+  it "should die if no extension prefix is configured and extensions are configured" do
+    Bot::Config.hash_temp_del(:extprefix) do
+      expect { Bot::validate_config }.to raise_error(Bot::ConfigError)
     end
   end
 end

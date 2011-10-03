@@ -6,20 +6,10 @@ describe "IrcMockSocket" do
   end
 
   it "should respond with ping after recieving nick/user in order" do
-    @i.nread.should be_zero
-    @i.write("USER a 0 * :fraud\r\n")
-    @i.write("NICK something\r\n")
-    @i.nread.should be_zero
-    @i.write("USER a 0 * :fraud\r\n")
-    @i.gets.should match(/PING :[0-9]+\r\n/)
-  end
-
-  it "should tell how many bytes are left in the buffer" do
-    @i.nread.should be_zero
-    @i.write("NICK something\r\n")
-    @i.write("USER a 0 * :fraud\r\n")
-    @i.nread.should be > 0
-    @i.gets.should match(/PING :[0-9]+\r\n/)
+    @i.write("NICK something\r\n").should eq(16)
+    @i.write("USER a 0 * :fraud\r\n").should eq(19)
+    @i.recv(nil).should match(/PING :[0-9]+/)
+    @i.recv(nil).should match(/[0-9]+\r\n/)
   end
 
   it "should be able to be closed" do

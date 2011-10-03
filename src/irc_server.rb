@@ -18,9 +18,10 @@ class IrcServer
   # Creates a fresh IrcServer
   #
   # @param [String] The address of the irc server
-  # @param [true, Fixnum] The port of the irc server, defaults to 6667
+  # @param [Fixnum] The port of the irc server, defaults to 6667
   # @return [nil] Nil
   def initialize(address, port = 6667)
+    port = 6667 if port == nil
     @address = address
     @port = port
     @state = State::Fresh
@@ -41,22 +42,52 @@ class IrcServer
       raise IOError, 'Socket must be connected to write'
     end
     data.each do |d|
-      @socket.write(d + "\r\n")
+      n = @socket.write(d + "\r\n")
+      if n != d.length + 2
+        raise IOError, "Socket write didn't complete."
+      end
     end
   end
 
-  # Returns a single line from the server
+  # Returns as many lines as possible from the server.
+  # Will block if there's nothing to read.
   #
-  # @return [Array<String>] A single line from the server
+  # @return [Array<String>] An array of irc protocol messages.
   def read
     unless @state == State::Connected
       raise IOError, 'Socket must be connected to read'
     end
-    ret = []
-    ret.push @socket.gets.chomp
-    while @socket.nread > 0
-      ret.push @socket.gets.chomp
+
+    ret = nil
+    truncated = nil
+
+    loop do
+      msg = @socket.recv(8192)
+      if msg == nil || msg.empty?
+        @state = State::Disconnected
+        return nil
+      end
+
+      split = msg.split("\r\n")
+      
+      if msg.end_with?("\r\n")
+        if truncated
+          ret.push truncated + split[0]
+          ret.push split[1...split.length]
+          return ret
+        end
+        return split
+      end
+
+      if truncated
+        ret.push truncated + split[0]
+        ret.push split[1...split.length-1]
+      else
+        ret = split[0...split.length-1]
+      end
+      truncated = split[split.length-1]
     end
+
     return ret
   end
 

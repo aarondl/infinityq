@@ -2,6 +2,11 @@
 :altnick: infinityqq
 :name: Infinity Ruby Bot
 :email: dev@null.rb
+:proto: irc.proto
+:extprefix: .
+:extpath: ./extensions/
+:extensions:
+  - Test_2
 :servers:
   :gamesurge:
     :address: localhost

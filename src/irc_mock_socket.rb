@@ -16,27 +16,27 @@ class IrcMockSocket
   # @param [Data] The data to send to the server
   # @return [nil] Nil
   def write(data)
-    if data.match /NICK \w+\r\n/
+    if data.match(/NICK \w+\r\n/)
       @state = :nick
     elsif @state == :nick && data.match(/USER \w+ [0-9]+ (\*|\w+) :\w+\r\n/)
       @state = :user
     end
+    return data.length
   end
 
   # Reads a line from the socket
   #
+  # @param [Fixnum] Maxbytes to read from the socket (ignored).
   # @return [String] Data from the socket
-  def gets
+  def recv(max_bytes)
     if @state == :user
       @state = :ping
-      return "PING :00293923823\r\n"
+      return "PING :00293923"
+    elsif @state == :ping
+      @state = :ping2
+      return "823\r\n"
     end
     sleep 10000
-  end
-
-  def nread
-    return 19 if @state == :user
-    return 0
   end
 
   # Closes the mock socket

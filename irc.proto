@@ -7,3 +7,5 @@ NAMES [*channellist]
 LIST [*channellist [server]]
 INVITE [nickname] [channel]
 KICK *channellist *nicklist [comment]
+NICK nick
+USER username hostname servername :realname
