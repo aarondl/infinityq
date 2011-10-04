@@ -71,8 +71,10 @@ class Bot
       @@instances[k] = BotInstance.new(v)
       @@instances[k].start
     end
+  end
 
-    @@instances.each do |key, value|
+  def self.wait_until_death
+    @@instances.each_value do |value|
       value.thread.join
     end
   end
@@ -99,5 +101,6 @@ end
 if __FILE__ == $0
   Bot::read_config
   Bot::start
+  Bot::wait_until_death
 end
 

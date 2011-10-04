@@ -21,7 +21,6 @@ describe "IrcProtoEvent" do
 
   it "should be able to have event data cleared" do
     @i.clear true
-    @i.event_count.should eq(1) #Raw is preserved
     @i.has_event?(:notice).should be_false
   end
 
@@ -61,6 +60,8 @@ describe "IrcProtoEvent" do
       from: 'fish@lol.com',
       raw: 'PEWPEW hello there!'
     )
+    @i.parse_proto('PEWPEW hi') #Test coverage
+    arguments.should include(raw: 'PEWPEW hi')
   end
 
   it "should throw protocol parse errors when bad protocol comes in" do
@@ -70,12 +71,6 @@ describe "IrcProtoEvent" do
       @i.parse_proto(':fish@lol.com NOTICE')
     }.to raise_error(IrcProtoEvent::ProtocolParseError)
     @i.clear
-  end
-
-  it "should have a fallback event called raw" do
-    @i.has_event?(:raw).should be_true
-    @i.clear true
-    @i.has_event?(:raw).should be_true
   end
 
   it "should parse a language into an event" do
@@ -103,8 +98,13 @@ describe "IrcProtoEvent" do
   end
 
   it "should parse csvlists" do
-    event = @i.send(:parse_event, 'LIST *listname')[:rules][0]
+    event = @i.send(:parse_event, 'NAMES *listname')[:rules][0]
     event.should include(rule: :csvlist, name: :listname)
+    arguments = nil
+    @i.register(:list, -> args { arguments = args })
+    @i.parse_proto('LIST hello,there')
+    arguments.should include(:channellist)
+    arguments[:channellist].should include('hello', 'there')
   end
 
   it "should die on badly formatted grammars" do
@@ -138,6 +138,13 @@ describe "IrcProtoEvent" do
     helper.list_helper(['#hi', '#there']).should eq('LIST #hi,#there')
     @i.clear true
     helper.respond_to?('notice_helper').should be_false
+  end
+
+  it "should create pseudo-events that persist across clears" do
+    evs = [:raw, :connect, :disconnect]
+    evs.each do |ev| @i.has_event?(ev).should be_true; end
+    @i.clear true
+    evs.each do |ev| @i.has_event?(ev).should be_true; end
   end
 
   it "should provide the names of notice and privmsg arguments" do

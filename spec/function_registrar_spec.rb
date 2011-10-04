@@ -1,3 +1,4 @@
+require_relative '../src/irc_proto_event'
 require_relative '../src/function_registrar'
 
 describe "FunctionRegistrar" do
@@ -48,5 +49,9 @@ describe "FunctionRegistrar" do
     @test.should include(msg: 'budday!')
   end
 
+  it "should die if translators receive other than public/private/notice" do
+    expect { @f.send(:get_event, nil) }.to raise_error(ArgumentError)
+    expect { @f.send(:get_method, nil) }.to raise_error(ArgumentError)
+  end
 end
 

@@ -1,9 +1,18 @@
 require_relative '../src/extension_host'
+require_relative '../src/function_registrar'
 
 describe "ExtensionHost" do
   before :each do
     @path = __FILE__.gsub(/spec\/[a-z0-9_]+\.rb/i, 'extensions')
-    @e = ExtensionHost.new(@path, 1, 2, 3)
+
+    @fn_registrar = double('FunctionRegistrar')
+    @fn_registrar.stub(:register)
+    @fn_registrar.stub(:unregister)
+    @irc_proto = double('IrcProtoEvent')
+    @irc_proto.stub(:register)
+    @irc_proto.stub(:unregister)
+
+    @e = ExtensionHost.new(@path, 1, @irc_proto, @fn_registrar)
     @e.load_extensions 'Test1', 'Test 2'
   end
 

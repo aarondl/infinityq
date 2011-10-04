@@ -116,12 +116,11 @@ class FunctionRegistrar
     when :public; return :privmsg
     when :private; return :privmsg
     when :notice; return :notice
-    else raise ArgumentError 'Msgtype must be :public|:private|:notice'
+    else raise ArgumentError, 'Msgtype must be :public|:private|:notice'
     end
   end
 
   def get_method(type)
-    method = nil
     case type
     when :public, :private; return :call_privmsg
     when :notice; return :call_notice

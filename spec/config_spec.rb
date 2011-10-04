@@ -13,6 +13,8 @@ describe "Bot" do
       ":name: Infinity Ruby Bot\n" +
       ":email: inf_bot@gmail.com\n" +
       ":proto: irc.proto\n" +
+      ":extpath: .\n" +
+      ":extprefix: .\n" +
       ":extensions:\n" +
       "  -Test1\n" +
       ":servers:\n" +
@@ -72,37 +74,55 @@ describe "Bot" do
 
   it "should die if no servers exist" do
     Bot::Config.hash_temp_del(:servers) do
-      expect { Bot::validate_config }.to raise_error(Bot::ConfigError)
+      expect { Bot::validate_config }.to raise_error(
+        Bot::ConfigError,
+        'Must have servers configured.'
+      )
     end
   end
   
   it "should die if servers have no addresses" do
     Bot::Config[:servers][:gamesurge].hash_temp_del(:address) do
-      expect { Bot::validate_config }.to raise_error(Bot::ConfigError)
+      expect { Bot::validate_config }.to raise_error(
+        Bot::ConfigError,
+        'Servers must have addresses configured.'
+      )
     end
   end
   
   it "should die if no bot details are configured" do
     Bot::Config.hash_temp_del([:nick, :altnick, :name, :email]) do
-      expect { Bot::validate_config }.to raise_error(Bot::ConfigError)
+      expect { Bot::validate_config }.to raise_error(
+        Bot::ConfigError,
+        'Must have nick, altnick, name, and email configured.'
+      )
     end
   end
 
   it "should die if no proto file is configured" do
     Bot::Config.hash_temp_del(:proto) do
-      expect { Bot::validate_config }.to raise_error(Bot::ConfigError)
+      expect { Bot::validate_config }.to raise_error(
+        Bot::ConfigError,
+        'Must have a proto file configured.'
+      )
     end
   end
 
   it "should die if no extension path is configured and extensions are configured" do
     Bot::Config.hash_temp_del(:extpath) do
-      expect { Bot::validate_config }.to raise_error(Bot::ConfigError)
+      expect { Bot::validate_config }.to raise_error(
+        Bot::ConfigError,
+        'Extensions must have a prefix and path.'
+      )
     end
   end
 
   it "should die if no extension prefix is configured and extensions are configured" do
     Bot::Config.hash_temp_del(:extprefix) do
-      expect { Bot::validate_config }.to raise_error(Bot::ConfigError)
+      expect { Bot::validate_config }.to raise_error(
+        Bot::ConfigError,
+        'Extensions must have a prefix and path.'
+      )
     end
   end
 end

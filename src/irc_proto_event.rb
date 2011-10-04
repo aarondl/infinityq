@@ -10,13 +10,15 @@ class IrcProtoEvent
   # the scope extensions can play with.
   class Helper; end
 
+  Pseudo = [:raw, :connect, :disconnect]
+
   # Creates a new IrcProtoEvent instance
   #
   # Reads in a .proto file
   # @param [String] A path to a .proto file to read.
   def initialize(filename)
     @events = {}
-    @events[:raw] = {callbacks: {}}
+    create_pseudo_events
     @helper = Helper.new()
     parse_file(filename)
   end
@@ -30,16 +32,9 @@ class IrcProtoEvent
   # @return [nil] Nil
   def clear(kill_events = false)
     if kill_events
-      saveraw = @events[:raw]
-      @events.each do |key, ev|
-        degenerate_helper(key) if key != :raw
-      end
-      @events.clear
-      @events[:raw] = saveraw
+      clear_events
     else
-      @events.each do |key, ev|
-        ev[:callbacks].clear if key != :raw && ev.has_key?(:callbacks)
-      end
+      clear_callbacks
     end
   end
 
@@ -135,14 +130,46 @@ class IrcProtoEvent
     return event[:callbacks].count
   end
 
-  # Retrieves the helper instance for this IrcProtoEvent.
-  #
-  # @return [IrcProtoEvent::Helper] The helper object for this IrcProtoEvent.
-  def helper
-    @helper    
-  end
+  # Gets the related helper instance for this IrcProtoEvent
+  attr_reader :helper
 
   protected
+
+  # Creates pseudo events not present in the proto file.
+  #
+  # @return [nil] Nil
+  def create_pseudo_events
+    Pseudo.each do |ev|
+      @events[ev] = {callbacks: {}}
+    end
+  end
+
+  # Clears the callbacks for all events.
+  #
+  # @return [nil] Nil
+  def clear_callbacks
+    @events.each do |event, eventobj|
+      eventobj[:callbacks].clear
+    end
+  end
+
+  # Clears all events except the pseudo events.
+  #
+  # @return [nil] Nil
+  def clear_events
+    save = {} 
+    Pseudo.each do |ev|
+      save[ev] = @events[ev]
+    end
+    @events.each_key do |ev|
+      next if Pseudo.include?(ev)
+      degenerate_helper(ev)
+    end
+    @events.clear
+    save.each do |ev, val|
+      @events[ev] = val
+    end
+  end
 
   # Dispatches events to the callbacks
   # registered for that event.
@@ -199,16 +226,18 @@ class IrcProtoEvent
     rules.each do |rule|
 
       name = rule[:name]
-      raise ProtocolParseError, parts.join(' ') if offset >= parts.length
 
       case rule[:rule]
       when :single
+        raise ProtocolParseError, parts.join(' ') if offset >= parts.length
         args[name] = parts[offset]
         offset += 1
       when :csvlist
+        raise ProtocolParseError, parts.join(' ') if offset >= parts.length
         args[name] = parts[offset].split(',')
         offset += 1
       when :remaining
+        raise ProtocolParseError, parts.join(' ') if offset >= parts.length
         parts[offset] = parts[offset][1...parts[offset].length]
         args[name] = parts[offset...parts.length].join(' ')
         return
@@ -216,7 +245,7 @@ class IrcProtoEvent
         if offset >= parts.length
           args[name] = nil
         else
-          args[name] = pull_args(rule[:rules], parts[offset...parts.length], args)
+          args[name] = pull_args(rule[:args], parts[offset...parts.length], args)
           offset += 1
         end
       else
