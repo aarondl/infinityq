@@ -15,9 +15,6 @@ class Extension
     @server = server
     @tokens = []
     @funcs = []
-    if respond_to?(:ext_load)
-      ext_load
-    end
   end
 
   # Registers an event for this extension.

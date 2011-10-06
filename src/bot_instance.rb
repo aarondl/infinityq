@@ -32,6 +32,7 @@ class BotInstance
   def start
     @thread = Thread.new {
       @server.connect
+      @proto.fire_pseudo(:connect, {address: @server.address?, port: @server.port?})
       protos = @server.read
       while protos != nil && @halt != true
         protos.each do |proto|

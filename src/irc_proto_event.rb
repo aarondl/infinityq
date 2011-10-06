@@ -322,8 +322,8 @@ class IrcProtoEvent
   end
 
   # Dynamically attaches a helper method with the
-  # name eventname_helper() with appropriate arguments
-  # to this instance of IrcProtoEvent
+  # name eventname() with appropriate arguments
+  # to this instance's Helper
   #
   # @param [Symbol] The event name.
   # @param [Hash] The event hash.
@@ -366,17 +366,17 @@ class IrcProtoEvent
       arglist += ')'
     end
 
-    eval("def @helper.#{eventname.to_s}_helper#{arglist}; #{body}; end")
+    eval("def @helper.#{eventname.to_s}#{arglist}; #{body}; end")
   end
 
   # Dynamically destroys a helper method with the name
-  # eventname_helper() from this instance of IrcProtoEvent
+  # eventname() from this instance of IrcProtoEvent
   #
   # @param [Symbol] The event name to degenerate the helper for.
   # @return [nil] Nil
   def degenerate_helper(eventname)
-    if @helper.respond_to?("#{eventname.to_s}_helper")
-      eval("class << @helper; remove_method(:#{eventname.to_s}_helper); end")
+    if @helper.respond_to?("#{eventname.to_s}")
+      eval("class << @helper; remove_method(:#{eventname.to_s}); end")
     end
   end
 

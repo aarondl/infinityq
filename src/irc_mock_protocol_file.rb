@@ -22,7 +22,8 @@ class IrcMockProtocolFile
       "INVITE [nickname] [channel]\r\n",
       "KICK *channellist *nicklist [comment]\r\n",
       "NICK nick\r\n",
-      "USER username hostname servername :realname\r\n"
+      "USER username hostname servername :realname\r\n",
+      "433 nickinuse :message\r\n"
     ]
   end
 end

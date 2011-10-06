@@ -133,11 +133,11 @@ describe "IrcProtoEvent" do
 
   it "should create helper methods for assembling raw" do
     helper = @i.helper
-    helper.respond_to?('notice_helper').should be_true
-    helper.notice_helper('Aaron', 'Hey there man').should eq('NOTICE Aaron :Hey there man')
-    helper.list_helper(['#hi', '#there']).should eq('LIST #hi,#there')
+    helper.respond_to?('notice').should be_true
+    helper.notice('Aaron', 'Hey there man').should eq('NOTICE Aaron :Hey there man')
+    helper.list(['#hi', '#there']).should eq('LIST #hi,#there')
     @i.clear true
-    helper.respond_to?('notice_helper').should be_false
+    helper.respond_to?('notice').should be_false
   end
 
   it "should create pseudo-events that persist across clears" do

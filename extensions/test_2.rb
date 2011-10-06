@@ -12,7 +12,7 @@ class Test_2 < Extension
 
   def privmsg(args)
     nick = args[:from].match(/([a-z]+)!/i)[1]
-    raw irc.notice_helper(nick, 'Hey buddy!')
+    raw irc.notice(nick, 'Hey buddy!')
   end
 end
 

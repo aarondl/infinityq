@@ -9,3 +9,4 @@ INVITE [nickname] [channel]
 KICK *channellist *nicklist [comment]
 NICK nick
 USER username hostname servername :realname
+433 nickinuse :message

@@ -16,6 +16,7 @@ class CoreEvents
     @server = server
     @irc_proto = irc_proto
     @pings = 0
+    @nickinuse = 0
 
     @nick = nick
     @altnick = altnick
@@ -24,6 +25,7 @@ class CoreEvents
 
     irc_proto.register(:ping, method(:ping))
     irc_proto.register(:connect, method(:connect))
+    irc_proto.register(:e433, method(:nick_in_use))
   end
 
   # The core event handler for connect.
@@ -34,9 +36,23 @@ class CoreEvents
   def connect(args)
     email = @email.split('@')
     @server.write(
-      @irc_proto.helper.nick_helper(@nick),
-      @irc_proto.helper.user_helper(email[0], '0', '*', @realname)
+      @irc_proto.helper.nick(@nick),
+      @irc_proto.helper.user(email[0], '0', '*', @realname)
     )
+  end
+
+  # Responds to nick in use requests by sending altnick
+  # followed by mangled nicknames.
+  #
+  # @param [Hash] The arguments from the 433 message.
+  # @return [nil] Nil
+  def nick_in_use(args)
+    if @nickinuse == 0
+      @server.write(@irc_proto.helper.nick(@altnick))
+    else
+      @server.write(@irc_proto.helper.nick(@nick + ('_'*@nickinuse)))
+    end
+    @nickinuse += 1
   end
 
   # The core event handler for ping.

@@ -27,6 +27,7 @@ describe "Extension" do
       def ext_load; @test = true; end
     end
     @ext = BotExtension.new(nil, nil, nil)
+    @ext.ext_load
     @ext.test.should be_true
   end
 
@@ -37,7 +38,7 @@ describe "Extension" do
     end
     @irc_proto.parse_proto('PRIVMSG Aaron :Hello')
     @ext.test.should be_nil
-    @ext.ext_load    
+    @ext.ext_load
     @irc_proto.parse_proto('PRIVMSG Aaron :Hello')
     @ext.test.should eq('Aaron')
     @ext.unload
@@ -62,7 +63,7 @@ describe "Extension" do
 
   it "should be able to send messages to the server" do
     class BotExtension
-      def gogo; raw irc.privmsg_helper('Aaron', 'Pewpewpew'); end
+      def gogo; raw irc.privmsg('Aaron', 'Pewpewpew'); end
     end
     @ext.gogo
   end

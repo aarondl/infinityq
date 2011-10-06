@@ -7,7 +7,11 @@ describe "CoreEvents" do
     @irc = IrcProtoEvent.new('irc.proto')
     @server = IrcServer.new('localhost')
     @server.connect
-    @c = CoreEvents.new(@server, @irc, 'irc', 'ircb', 'a@a.com', 'lol')
+    @c = get_core_evs(@server)
+  end
+
+  def get_core_evs(server)
+    return CoreEvents.new(server, @irc, 'irc', 'ircb', 'a@a.com', 'lol')
   end
 
   it "should attach to an IrcProto instance's ping event" do
@@ -28,6 +32,17 @@ describe "CoreEvents" do
     @irc.fire_pseudo(:connect, {address: @server.address?, port: @server.port?})
     @server.read.should_not be_nil #Before the server receives nick & user it will
     # not respond in any way shape or form, therefore this is a definitive test.
+  end
+
+  it "should respond to 433 by sending altnick and mangled versions of nick thereafter" do
+    s = double('Server').as_null_object
+    c = get_core_evs(s)
+    s.should_receive(:write).with('NICK ircb').ordered
+    s.should_receive(:write).with('NICK irc_').ordered
+    s.should_receive(:write).with('NICK irc__').ordered
+    @irc.parse_proto('433 ircb :nickname in use')
+    @irc.parse_proto('433 irc_ :nickname in use')
+    @irc.parse_proto('433 irc__ :nickname in use')
   end
 end
 
