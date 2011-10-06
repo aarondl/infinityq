@@ -1,12 +1,21 @@
 # Mocks a tcp socket to an irc server
 class IrcMockSocket
+  Messages = [
+    "PING :00293923",
+    "832\r\n",
+    ":irc.gamesurge.net NOTICE botname :how are you?\r\n:irc",
+    ".gamesurge.net NOTICE botname ::D\r\n:irc.gamesurge.net NO",
+    "TICE botname :here's some fun!\r\n",
+    ":irc.gamesurge.net NOTICE botname :more fun for you!\r\n"
+  ]
+
   # Creates a new mock socket
   #
   # @param [Address] The hostname or ip address of the server
   # @param [Port] The port number to connect to
   # @return [nil] Nil
   def initialize(address, port)
-    @state = :init
+    @state = 0
   end
 
   # Writes data to the socket
@@ -16,10 +25,15 @@ class IrcMockSocket
   # @param [Data] The data to send to the server
   # @return [nil] Nil
   def write(data)
+    if @state == :quit
+      return data.length / 2
+    end
     if data.match(/NICK \w+\r\n/)
       @state = :nick
     elsif @state == :nick && data.match(/USER \w+ [0-9]+ (\*|\w+) :\w+\r\n/)
       @state = :user
+    elsif data.match(/^QUIT/)
+      @state = :quit
     end
     return data.length
   end
@@ -29,14 +43,17 @@ class IrcMockSocket
   # @param [Fixnum] Maxbytes to read from the socket (ignored).
   # @return [String] Data from the socket
   def recv(max_bytes)
-    if @state == :user
-      @state = :ping
-      return "PING :00293923"
-    elsif @state == :ping
-      @state = :ping2
-      return "823\r\n"
+    if @state == :quit
+      return nil
+    elsif @state == :user
+      @state = 0
     end
-    sleep 10000
+    if @state.kind_of?(Integer)
+      msg = Messages[@state]
+      @state += 1
+      return msg
+    end
+    return nil
   end
 
   # Closes the mock socket

@@ -18,9 +18,7 @@ describe "IrcServer" do
   it "should provide details about the connection" do
     @s.address?.should eq('localhost')
     @s.port?.should eq(6667)
-    ip_addresses =
-      ENV['INF_ENV'] == 'TEST' ?
-      ['64.31.0.226'] :
+    ip_addresses = ENV['INF_ENV'] == 'TEST' ? ['64.31.0.226'] :
       `nslookup #{@s.address?}`.scan(/Address: (.*[0-9]{1,3})/).flatten
     ip_addresses.should include(@s.ip?)
     @s.hostname?.should_not be_nil
@@ -30,6 +28,22 @@ describe "IrcServer" do
     @s.write('NICK fraud')
     @s.write('USER a 0 * :fraud')
     @s.read.should_not be_nil
+  end
+
+  it "should combine message fragments" do
+    @s.disconnect
+    store = ENV['INF_ENV']
+    ENV['INF_ENV'] = 'TEST'
+    s = IrcServer.new('localhost')
+    s.connect
+    ENV['INF_ENV'] = store
+    s.write('NICK fraud', 'USER a 0 * :fraud')
+    s.read.should_not be_nil #Test coverage from here down, I'M SORRY OKAY?
+    s.read.should_not be_nil
+    s.read.should_not be_nil
+    s.write('QUIT :message') 
+    expect { s.write('Something') }.to raise_error(IOError)
+    s.read.should be_nil
   end
 
   it "should split messages on newlines from reads" do

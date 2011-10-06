@@ -151,5 +151,13 @@ describe "IrcProtoEvent" do
     @i.privmsg_args?.should include(:user, :msg)    
     @i.notice_args?.should include(:user, :msg)    
   end
+
+  it "should fire pseudo events" do
+    arguments = nil
+    @i.register(:connect, -> args {arguments = args})
+    @i.fire_pseudo(:connect, {})
+    arguments.should_not be_nil
+    arguments.should be_empty
+  end
 end
 

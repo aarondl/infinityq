@@ -14,7 +14,8 @@ class BotInstance
   def initialize(config)
     @server = IrcServer.new config[:address], config[:port]
     @proto = IrcProtoEvent.new config[:proto]
-    @core_events = CoreEvents.new @server, @proto 
+    @core_events = CoreEvents.new @server, @proto, config[:nick],
+      config[:altnick], config[:email], config[:name]
     @fn_registrar = FunctionRegistrar.new @proto, config[:extprefix]
     @exthost = ExtensionHost.new config[:extpath], @server, @proto, @fn_registrar
     @key = config[:key]
@@ -31,10 +32,6 @@ class BotInstance
   def start
     @thread = Thread.new {
       @server.connect
-
-      # TODO: Do some sort of writes to initialize
-      # the connection here.
-
       protos = @server.read
       while protos != nil && @halt != true
         protos.each do |proto|
@@ -46,6 +43,8 @@ class BotInstance
   end
 
   # Halts this BotInstance.
+  #
+  # @return [nil] Nil
   def halt
     @halt = true
     @server.disconnect

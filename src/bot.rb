@@ -73,6 +73,10 @@ class Bot
     end
   end
 
+  # Joins the remaining threads until the bot
+  # is ready to die.
+  #
+  # @return [nil] Nil
   def self.wait_until_death
     @@instances.each_value do |value|
       value.thread.join

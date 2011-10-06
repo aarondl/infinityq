@@ -60,6 +60,22 @@ class IrcProtoEvent
     end 
   end
 
+  # Fires event handlers for pseudo events. Also
+  # all other events. But don't tell anyone. 
+  #
+  # @param [Hash] The arguments to pass to the pseudo # event.
+  # @return [nil] Nil
+  def fire_pseudo(event, args)
+    if has_event?(event)
+      event = @events[event]
+      if event.has_key?(:callbacks) && !event[:callbacks].empty?
+        event[:callbacks].each_value do |callback|
+          callback.call args
+        end
+      end
+    end
+  end
+
   # Registers a callback on the event.
   #
   # @param [String, Integer, Symbol] The object specifying the event.

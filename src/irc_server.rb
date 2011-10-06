@@ -87,8 +87,6 @@ class IrcServer
       end
       truncated = split[split.length-1]
     end
-
-    return ret
   end
 
   # Disconnects from the irc server

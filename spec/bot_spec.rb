@@ -18,5 +18,14 @@ describe "Bot" do
       Bot::Config[:servers].should include(i.key)
     end
   end
+
+  it "should wait until all other threads exit" do
+    Bot::read_config
+    Bot::start
+    Bot::each do |i|
+      i.halt
+    end
+    Bot::wait_until_death
+  end
 end
 
