@@ -36,6 +36,7 @@ class BotInstance
       protos = @server.read
       while protos != nil && @halt != true
         protos.each do |proto|
+          Log::write proto
           @proto.parse_proto(proto)
         end
         protos = @server.read

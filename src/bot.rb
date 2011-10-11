@@ -1,4 +1,6 @@
 require 'yaml'
+require_relative 'log'
+require_relative 'stdout_provider'
 require_relative 'bot_instance'
 require_relative 'exceptions'
 
@@ -86,7 +88,7 @@ class Bot
   # Retrieves a bot instance.
   #
   # @param [Symbol] The symbol of the instance.
-  # @return [Hash] The instance.
+  # @return [BotInstance] The instance.
   def self.instance(key)
     return @@instances[key]
   end
@@ -103,8 +105,26 @@ class Bot
 end
 
 if __FILE__ == $0
+  Log::set_provider StdoutProvider.new()
   Bot::read_config
   Bot::start
+  loop do
+    cmd = gets
+    break if cmd == 'quit'
+    split = cmd.split
+    server = split[0].to_sym
+    if server != nil
+      instance = Bot::instance(server)
+      if instance != nil
+        instance.server.write(split[1...split.length].join(' '))
+      end
+    end
+  end
+
+  Bot::each do |s|
+    s.halt
+  end
+
   Bot::wait_until_death
 end
 
