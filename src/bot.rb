@@ -109,7 +109,7 @@ if __FILE__ == $0
   Bot::read_config
   Bot::start
   loop do
-    cmd = gets
+    cmd = gets.chomp
     break if cmd == 'quit'
     split = cmd.split
     server = split[0].to_sym
