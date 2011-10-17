@@ -2,20 +2,26 @@ require_relative '../../src/user/user'
 
 describe "User" do
   before :each do
-    @host = '*@b?tforge.ca'
+    @host = /.*@b.?tforge\.ca/
     @u = User.new
     @u.add_host(@host)
   end
 
-  it "should keep a list of hosts" do
+  it "should add unique hosts" do
     @u.add_host(@host)
     @u.each_host do |h|
       h.should eq(@host)
+      h.should be_kind_of(Regexp)
     end
     @u.hosts_count.should eq(1)
   end
 
-  it "should keep global access" do
+  it "should remove hosts" do
+    @u.remove_host(@host)
+    @u.hosts_count.should eq(0)
+  end
+
+  it "should keep a global access" do
     @u.global_access.power.should be_zero
   end
 
@@ -24,9 +30,27 @@ describe "User" do
       @u.add_server(:gamesurge, 50, Access::A)
     end
 
-    context "and it has channel access for #C++" do
+    context "when it has channel access for #C++" do
       before :each do
         @u[:gamesurge].add_channel('#C++', 100, Access::C)
+      end
+
+      it "should set channel state" do
+        c = @u[:gamesurge]['#C++']
+        c.online.should be_false
+        c.set_state 'ov'
+        c.each_mode do |m|
+          m.should match(/[ov]/)
+        end
+        c.has_mode?('o').should be_true
+        c.online.should be_true
+        c.wipe_state
+        c.online.should be_false
+      end
+
+      it "should allow removal of a channel" do
+        @u[:gamesurge].remove_channel('#C++')
+        @u[:gamesurge]['#C++'].should be_nil
       end
 
       it "should allow context setting" do
@@ -57,6 +81,34 @@ describe "User" do
     it "should contain access for servers the user has access to" do
       (@u[:gamesurge].access == 50).should be_true
       @u[:gamesurge].access[Access::A].should be_true
+    end
+
+    it "should set server state" do
+      s = @u[:gamesurge]
+      s.online.should be_false
+      s.set_state('~Aaron@bitforge.ca', 'Aaron L', ['#C++', '#blackjack'])
+      s.nick.should eq('Aaron')
+      s.host.should eq('bitforge.ca')
+      s.realname.should eq('Aaron L')
+      s.fullhost.should eq('~Aaron@bitforge.ca')
+      s.channels.should include('#c++', '#blackjack')
+      s.online.should be_true
+    end
+
+    it "should wipe server state" do
+      s = @u[:gamesurge]
+      s.wipe_state
+      s.nick.should be_nil
+      s.host.should be_nil
+      s.realname.should be_nil
+      s.fullhost.should be_nil
+      s.channels.should be_nil
+      s.online.should be_false
+    end
+
+    it "should remove servers" do
+      @u.remove_server(:gamesurge)
+      @u[:gamesurge].should be_nil
     end
   end
 
