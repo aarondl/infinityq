@@ -77,11 +77,17 @@ class ServerUser
     return @chanlist
   end
 
+  # Checks to see if this user is online.
+  #
+  # @return [Bool] Whether or not they're online.
+  def online?
+    return @online
+  end
+
   attr_reader :fullhost
   attr_reader :host
   attr_reader :nick
   attr_reader :realname
-  attr_reader :online
     
   attr_reader :access
   attr_reader :server_key
@@ -115,7 +121,7 @@ class ChannelUser
   #
   # @param [String] Modes
   # @return [nil] Nil
-  def set_state(modes)
+  def set_state(modes = nil)
     @modes = modes
     @online = true
   end
@@ -146,7 +152,12 @@ class ChannelUser
     end
   end
 
-  attr_reader :online
+  # Checks to see if this user is online.
+  #
+  # @return [Bool] Whether or not they're online.
+  def online?
+    return @online
+  end
 
   attr_reader :access
   attr_reader :channel_name
@@ -158,11 +169,13 @@ class User
   # Creates a new user with no global access
   # and and empty hosts array.
   #
+  # @param [Bool] Marks whether or not this user is explicit
   # @return [User] A new user object.
-  def initialize
+  def initialize(explicit = false)
     @hosts = []
     @servers = {}
     @global_access = Access.new
+    @explicit = explicit
   end
   
   # Adds a host to the collection.
@@ -263,6 +276,19 @@ class User
     return Access::merge(global, server, channel)
   end
 
+  # Wipes the state of all channels and servers.
+  #
+  # @return [nil] Nil
+  def wipe_all_state
+    @servers.each_value do |s|
+      s.channels.each do |c|
+        channel = s[c]
+        channel.wipe_state unless channel.nil?
+      end
+      s.wipe_state
+    end
+  end
+
   # Returns the number of hosts.
   #
   # @return [Fixnum] The number of hosts.
@@ -271,5 +297,6 @@ class User
   end
 
   attr_reader :global_access
+  attr_accessor :explicit
 end
 

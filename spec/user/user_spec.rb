@@ -25,6 +25,12 @@ describe "User" do
     @u.global_access.power.should be_zero
   end
 
+  it "should be able to be marked as explicit" do
+    @u.explicit.should be_false
+    @u.explicit = true
+    @u.explicit.should be_true
+  end
+
   context "when it has some server access for :gamesurge" do
     before :each do
       @u.add_server(:gamesurge, 50, Access::A)
@@ -35,17 +41,25 @@ describe "User" do
         @u[:gamesurge].add_channel('#C++', 100, Access::C)
       end
 
+      it "should wipe all states" do
+        @u[:gamesurge].set_state('~Aaron@bitforge.ca', 'Aaron L', ['#C++', '#blackjack'])
+        @u[:gamesurge]['#C++'].set_state 'o'
+        @u.wipe_all_state
+        @u[:gamesurge].online?.should be_false
+        @u[:gamesurge]['#C++'].online?.should be_false
+      end
+
       it "should set channel state" do
         c = @u[:gamesurge]['#C++']
-        c.online.should be_false
+        c.online?.should be_false
         c.set_state 'ov'
         c.each_mode do |m|
           m.should match(/[ov]/)
         end
         c.has_mode?('o').should be_true
-        c.online.should be_true
+        c.online?.should be_true
         c.wipe_state
-        c.online.should be_false
+        c.online?.should be_false
       end
 
       it "should allow removal of a channel" do
@@ -85,14 +99,14 @@ describe "User" do
 
     it "should set server state" do
       s = @u[:gamesurge]
-      s.online.should be_false
+      s.online?.should be_false
       s.set_state('~Aaron@bitforge.ca', 'Aaron L', ['#C++', '#blackjack'])
       s.nick.should eq('Aaron')
       s.host.should eq('bitforge.ca')
       s.realname.should eq('Aaron L')
       s.fullhost.should eq('~Aaron@bitforge.ca')
       s.channels.should include('#c++', '#blackjack')
-      s.online.should be_true
+      s.online?.should be_true
     end
 
     it "should wipe server state" do
@@ -103,7 +117,7 @@ describe "User" do
       s.realname.should be_nil
       s.fullhost.should be_nil
       s.channels.should be_nil
-      s.online.should be_false
+      s.online?.should be_false
     end
 
     it "should remove servers" do
