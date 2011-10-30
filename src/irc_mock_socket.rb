@@ -1,5 +1,6 @@
 # Mocks a tcp socket to an irc server
 class IrcMockSocket
+  # Some fake messages to pump out in order.
   Messages = [
     "PING :00293923",
     "832\r\n",

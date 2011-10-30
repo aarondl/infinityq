@@ -26,6 +26,7 @@ describe "Access" do
   it "should convert string flags to real flags" do
     @a.add('a')
     @a.has?('a').should be_true
+    @a.has_any?('a').should be_true
   end
 
   it "should check for flags" do

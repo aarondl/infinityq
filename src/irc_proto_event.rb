@@ -10,13 +10,24 @@ class IrcProtoEvent
   # the scope extensions can play with.
   class Helper; end
 
+  # The pseudo events created by the IrcProtoEvent class.
   Pseudo = [:raw, :connect, :disconnect]
+
+  # The list of valid channel prefixes
+  ChannelPrefix = ['#']
 
   # Creates a new IrcProtoEvent instance
   #
   # Reads in a .proto file
   # @param [String] A path to a .proto file to read.
-  def initialize(filename)
+  # @param [UserDb] A user database object.
+  # @param [ChannelDb] A channel database object.
+  # @param [Symbol] The server key to access the databases.
+  # @return [IrcProtoEvent] An irc proto event instance.
+  def initialize(filename, userdb, chandb, server_key)
+    @userdb = userdb
+    @chandb = chandb
+    @server_key = server_key
     @events = {}
     create_pseudo_events
     @helper = Helper.new()
@@ -148,6 +159,7 @@ class IrcProtoEvent
 
   # Gets the related helper instance for this IrcProtoEvent
   attr_reader :helper
+  attr_reader :server_key
 
   protected
 
@@ -198,7 +210,17 @@ class IrcProtoEvent
     offset = from_msg ? 2 : 1
     args = {}
 
-    args[:from] = parts[0][1...parts[0].length] if from_msg
+    if from_msg
+      host = parts[0][1...parts[0].length]
+      user = @userdb.find(user)
+      if user.nil?
+        user = User.new()
+        user.add_server(@server_key)
+        user[@server_key].set_state(host, nil, nil)
+        @userdb.add(user)
+      end
+      args[:from] = user
+    end
 
     if event.has_key?(:rules)
       pull_args(event[:rules], parts, args, offset)
@@ -251,6 +273,23 @@ class IrcProtoEvent
       when :csvlist
         raise ProtocolParseError, parts.join(' ') if offset >= parts.length
         args[name] = parts[offset].split(',')
+        offset += 1
+      when :channel
+        raise ProtocolParseError, parts.join(' ') if offset >= parts.length
+        channel = parts[offset]
+        if is_channel?(channel)
+          channel = lookup_channel(channel)
+        end
+        args[name] = channel
+        offset += 1
+      when :chanlist
+        raise ProtocolParseError, parts.join(' ') if offset >= parts.length
+        channel_names = parts[offset].split(',')
+        channels = []
+        channel_names.each do |chan|
+          channels.push(lookup_channel(chan))
+        end
+        args[name] = channels
         offset += 1
       when :remaining
         raise ProtocolParseError, parts.join(' ') if offset >= parts.length
@@ -342,7 +381,7 @@ class IrcProtoEvent
         rule = rules[i]
         prefix = suffix = ''
         case rule[:rule]
-        when :csvlist
+        when :csvlist, :chanlist
           suffix = ".join(',')"
         when :remaining
           prefix = ':'
@@ -404,6 +443,33 @@ class IrcProtoEvent
     return rules
   end
 
+  # Checks to make sure that the channel name
+  # follows the naming conventions for channels
+  # according to the ChannelPrefix array.
+  #
+  # @param [String] Channel name
+  # @return [Bool] Whether or not it's a valid channel
+  def is_channel?(name)
+    ChannelPrefix.each do |prefix|
+      if name.start_with?(prefix)
+        return true
+      end
+    end
+    return false
+  end
+
+  # Looks up a channel in the channel database
+  #
+  # @param [String] Channel name.
+  # @return [Channel] The channel object
+  def lookup_channel(name)
+    channel = @chandb[@server_key, name]
+    if channel.nil?
+      channel = Channel.new(@server_key, name)
+    end
+    return channel
+  end
+
   # Gets the rules for optional arguments
   #
   # @param [String] The argument list.
@@ -434,6 +500,16 @@ class IrcProtoEvent
     if arg.start_with?('*')
       raise ProtocolFormatError, arg if type == :remaining
       type = :csvlist
+      arg = arg[1...arg.length]
+    end
+    if arg.start_with?('#')
+      raise ProtocolFormatError, arg if type == :remaining
+      case type
+      when :single
+        type = :channel
+      when :csvlist
+        type = :chanlist
+      end
       arg = arg[1...arg.length]
     end
 

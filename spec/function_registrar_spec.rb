@@ -1,10 +1,12 @@
 require_relative '../src/irc_proto_event'
 require_relative '../src/function_registrar'
+require_relative '../src/channel/channel_db'
+require_relative '../src/user/user_db'
 
 describe "FunctionRegistrar" do
   before :each do
     @test = false
-    @i = IrcProtoEvent.new('irc.proto')
+    @i = IrcProtoEvent.new('irc.proto', UserDb.new(), ChannelDb.new(), :gamesurge)
     @f = FunctionRegistrar.new(@i, '!')
     @token = @f.register(:private, -> args { @test = args }, 'hi')
   end

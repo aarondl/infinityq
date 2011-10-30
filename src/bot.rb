@@ -3,6 +3,8 @@ require_relative 'log'
 require_relative 'stdout_provider'
 require_relative 'bot_instance'
 require_relative 'exceptions'
+require_relative 'channel/channel_db'
+require_relative 'user/user_db'
 
 # Ruby IRC Bot main class
 class Bot
@@ -32,6 +34,14 @@ class Bot
         end
       end
     end
+  end
+
+  # Reads the user and channel database if available.
+  #
+  # @return [nil] Nil
+  def self.read_databases
+    @@userdb = UserDb.new()
+    @@chandb = ChannelDb.new()
   end
 
   # Validates a bot configuration.
@@ -70,7 +80,7 @@ class Bot
     @@instances = {}
     Config[:servers].each do |k, v|
       v[:key] = k
-      @@instances[k] = BotInstance.new(v)
+      @@instances[k] = BotInstance.new(v, @@userdb, @@chandb)
       @@instances[k].start
     end
   end
@@ -101,6 +111,20 @@ class Bot
     @@instances.each do |k, v|
       yield v
     end
+  end
+
+  # Gets the user database for the bot.
+  #
+  # @return [UserDb] The user database.
+  def self.userdb
+    @@userdb
+  end
+
+  # Gets the channel database for the bot.
+  #
+  # @return [ChannelDb] The channel database.
+  def self.chandb
+    @@chandb
   end
 end
 

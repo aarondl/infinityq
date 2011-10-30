@@ -1,4 +1,6 @@
 require_relative '../src/bot_instance'
+require_relative '../src/channel/channel_db'
+require_relative '../src/user/user_db'
 
 describe "BotInstance" do
   before :all do
@@ -11,7 +13,7 @@ describe "BotInstance" do
       extprefix: '.', key: :gamesurge
     }
 
-    @b = BotInstance.new(config)
+    @b = BotInstance.new(config, UserDb.new(), ChannelDb.new())
   end
 
   it "should take a configuration chunk to create it" do

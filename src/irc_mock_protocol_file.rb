@@ -13,14 +13,14 @@ class IrcMockProtocolFile
   def readlines
     return [
       "PING :id\r\n",
-      "PRIVMSG user :msg\r\n",
-      "NOTICE user :msg\r\n",
-      "MODE modestr [limit] [user] [banmask]\r\n",
-      "TOPIC channel [topic]\r\n",
-      "NAMES [*channellist]\r\n",
-      "LIST [*channellist [server]]\r\n",
+      "PRIVMSG #target :msg\r\n",
+      "NOTICE #target :msg\r\n",
+      "MODE #target modestr [limit] [user] [banmask]\r\n",
+      "TOPIC #channel [topic]\r\n",
+      "NAMES [*#channellist]\r\n",
+      "LIST [*#channellist [server]]\r\n",
       "INVITE [nickname] [channel]\r\n",
-      "KICK *channellist *nicklist [comment]\r\n",
+      "KICK *#channellist *nicklist [:comment]\r\n",
       "NICK nick\r\n",
       "USER username hostname servername :realname\r\n",
       "433 nickinuse :message\r\n"

@@ -1,5 +1,6 @@
 require 'uuid'
 
+# Generates tokens to uniquely identify objects.
 class TokenGenerator
   # Generates a randomized token to uniquely identify
   # event registrations.

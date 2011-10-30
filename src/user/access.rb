@@ -2,12 +2,60 @@
 # by flags and numerics. It also packs
 # and unpacks.
 class Access
-  A = 0x1; B = 0x2; C = 0x4; D = 0x8; E = 0x10; F = 0x20
-  G = 0x40; H = 0x80; I = 0x100; J = 0x200; K = 0x400
-  L = 0x800; M = 0x1000; N = 0x2000; O = 0x4000; P = 0x8000
-  Q = 0x10000; R = 0x20000; S = 0x40000; T = 0x80000
-  U = 0x100000; V = 0x200000; W = 0x400000; X = 0x800000; Z = 0x1000000
+  # A
+  A = 0x1
+  # B
+  B = 0x2
+  # C
+  C = 0x4
+  # D
+  D = 0x8
+  # E
+  E = 0x10
+  # F
+  F = 0x20
+  # G
+  G = 0x40
+  # H
+  H = 0x80
+  # I
+  I = 0x100
+  # J
+  J = 0x200
+  # K
+  K = 0x400
+  # L
+  L = 0x800
+  # M
+  M = 0x1000
+  # N
+  N = 0x2000
+  # O
+  O = 0x4000
+  # P
+  P = 0x8000
+  # Q
+  Q = 0x10000
+  # R
+  R = 0x20000
+  # S
+  S = 0x40000
+  # T
+  T = 0x80000
+  # U
+  U = 0x100000
+  # V
+  V = 0x200000
+  # W
+  W = 0x400000
+  # X
+  X = 0x800000
+  # Z
+  Z = 0x1000000
 
+  # Merges two access classes together.
+  #
+  # @return [Access] The new access.
   def self.merge(*merges)
     power = 0
     flags = 0

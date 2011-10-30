@@ -8,6 +8,7 @@ class IrcProtoEvent
   # Raised when a Protocol parsing error has occurred
   class ProtocolFormatError < StandardError
   end
+  # Raised when a Protocol parsing error has occurred
   class ProtocolParseError < StandardError
   end
 end

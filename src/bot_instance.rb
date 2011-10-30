@@ -11,9 +11,12 @@ class BotInstance
   # classes satisfying all class dependencies.
   #
   # @param [Hash] The configuration to use.
-  def initialize(config)
+  # @param [UserDb] A user database.
+  # @param [ChannelDb] A channel database.
+  # @return [BotInstance] A new BotInstance.
+  def initialize(config, userdb, chandb)
     @server = IrcServer.new config[:address], config[:port]
-    @proto = IrcProtoEvent.new config[:proto]
+    @proto = IrcProtoEvent.new config[:proto], userdb, chandb, config[:key]
     @core_events = CoreEvents.new @server, @proto, config[:nick],
       config[:altnick], config[:email], config[:name]
     @fn_registrar = FunctionRegistrar.new @proto, config[:extprefix]

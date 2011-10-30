@@ -1,8 +1,14 @@
 require_relative '../src/irc_proto_event'
+require_relative '../src/channel/channel_db'
+require_relative '../src/channel/channel'
+require_relative '../src/user/user_db'
+require_relative '../src/user/user'
 
 describe "IrcProtoEvent" do
   before :each do
-    @i = IrcProtoEvent.new('irc.proto')
+    @userdb = UserDb.new()
+    @chandb = ChannelDb.new()
+    @i = IrcProtoEvent.new('irc.proto', @userdb, @chandb, :gamesurge)
   end
 
   it "should read in a file on instantiation" do
@@ -45,10 +51,11 @@ describe "IrcProtoEvent" do
     @i.parse_proto(':fish@lol.com NOTICE Aaron :Hey man, wake up!')
     arguments.should_not be_nil
     arguments.should include(
-      from: 'fish@lol.com',
-      user: 'Aaron',
+      target: 'Aaron',
       msg: 'Hey man, wake up!'
     )
+    arguments[:from].should be_a(User)
+    arguments[:from][@i.server_key].online?.should be_true
   end
 
   it "should always dispatch to raw" do
@@ -101,10 +108,20 @@ describe "IrcProtoEvent" do
     event = @i.send(:parse_event, 'NAMES *listname')[:rules][0]
     event.should include(rule: :csvlist, name: :listname)
     arguments = nil
-    @i.register(:list, -> args { arguments = args })
-    @i.parse_proto('LIST hello,there')
-    arguments.should include(:channellist)
-    arguments[:channellist].should include('hello', 'there')
+    @i.register(:kick, -> args { arguments = args })
+    @i.parse_proto('KICK #hello,#there Aaron,fish :Here is a msg')
+    arguments.should include(:channellist, :nicklist, :comment)
+    arguments[:channellist][0].name.should eq('#hello')
+    arguments[:channellist][1].name.should eq('#there')
+    arguments[:nicklist].should include('Aaron', 'fish')
+    arguments[:comment].should eq('Here is a msg')
+  end
+
+  it "should parse channel arguments" do
+    event = @i.send(:parse_event, 'LIST *#channels')
+    event[:rules][0].should include(rule: :chanlist, name: :channels)
+    event = @i.send(:parse_event, 'LIST #channel')
+    event[:rules][0].should include(rule: :channel, name: :channel)
   end
 
   it "should die on badly formatted grammars" do
@@ -119,6 +136,9 @@ describe "IrcProtoEvent" do
     }.to raise_error(IrcProtoEvent::ProtocolFormatError)
     expect {
       @i.send(:parse_event, 'hello *:stuff')
+    }.to raise_error(IrcProtoEvent::ProtocolFormatError)
+    expect {
+      @i.send(:parse_event, 'hello :#channelremaining')
     }.to raise_error(IrcProtoEvent::ProtocolFormatError)
   end
 
@@ -148,8 +168,8 @@ describe "IrcProtoEvent" do
   end
 
   it "should provide the names of notice and privmsg arguments" do
-    @i.privmsg_args?.should include(:user, :msg)    
-    @i.notice_args?.should include(:user, :msg)    
+    @i.privmsg_args?.should include(:target, :msg)    
+    @i.notice_args?.should include(:target, :msg)    
   end
 
   it "should fire pseudo events" do
@@ -158,6 +178,20 @@ describe "IrcProtoEvent" do
     @i.fire_pseudo(:connect, {})
     arguments.should_not be_nil
     arguments.should be_empty
+  end
+
+  it "should convert :from arg into a User object" do
+    arguments = nil
+    @i.register(:notice, -> args {arguments = args})
+    @i.parse_proto(':fish@lol.com NOTICE Aaron :Hey man, wake up!')
+    arguments[:from].should be_a(User)
+  end
+
+  it "should convert channel arguments into Channel objects" do
+    arguments = nil
+    @i.register(:notice, -> args {arguments = args})
+    @i.parse_proto(':fish@lol.com NOTICE #c++ :Hey man, wake up!')
+    arguments[:target].should be_a(Channel)
   end
 end
 

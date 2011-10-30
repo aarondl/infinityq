@@ -92,6 +92,12 @@ class FunctionRegistrar
     call_callbacks(@notice_args, @functions[:notice], args)
   end
 
+  # Calls the callbacks with the appropriate arguments.
+  #
+  # @param [Array<Symbol>] Argument names to pass along.
+  # @param [Hash<Symbol, Hash>] The list of callbacks to call
+  # @param [Hash] The arguments to pass to the callbacks.
+  # @return [nil] Nil
   def call_callbacks(argnames, func, args)
     argnames = argnames || [:user, :msg]
     msg = args[argnames[1]]
@@ -111,6 +117,10 @@ class FunctionRegistrar
   end
 
   private
+  # Gets the event for a specific type of message.
+  #
+  # @param [Symbol] Type
+  # @return [Symbol] The event.
   def get_event(type)
     case type
     when :public; return :privmsg
@@ -120,6 +130,9 @@ class FunctionRegistrar
     end
   end
 
+  # Gets the handler for a specific type of message.
+  #
+  # @param [Symbol] Type
   def get_method(type)
     case type
     when :public, :private; return :call_privmsg

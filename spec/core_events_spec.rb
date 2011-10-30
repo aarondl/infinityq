@@ -1,10 +1,12 @@
 require_relative '../src/irc_proto_event'
 require_relative '../src/irc_server'
 require_relative '../src/core_events'
+require_relative '../src/channel/channel_db'
+require_relative '../src/user/user_db'
 
 describe "CoreEvents" do
   before :each do
-    @irc = IrcProtoEvent.new('irc.proto')
+    @irc = IrcProtoEvent.new('irc.proto', UserDb.new(), ChannelDb.new(), :gamesurge)
     @server = IrcServer.new('localhost')
     @server.connect
     @c = get_core_evs(@server)

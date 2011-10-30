@@ -20,11 +20,13 @@ class ServerUser
   # @param [String] Realname
   # @param [Array<String>] A list of channel keys.
   # @return [nil] Nil
-  def set_state(host, realname, channels)
+  def set_state(host, realname = nil, channels = nil)
     self.fullhost = host
     @realname = realname
-    for i in (0...channels.length)
-      channels[i] = channels[i].downcase
+    unless channels.nil?
+      for i in (0...channels.length)
+        channels[i] = channels[i].downcase
+      end
     end
     @chanlist = channels
     @online = true

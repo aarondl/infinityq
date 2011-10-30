@@ -2,6 +2,8 @@ require_relative '../src/extension'
 require_relative '../src/irc_proto_event'
 require_relative '../src/function_registrar'
 require_relative '../src/irc_server'
+require_relative '../src/channel/channel_db'
+require_relative '../src/user/user_db'
 
 describe "Extension" do
   before :each do
@@ -11,7 +13,7 @@ describe "Extension" do
     class BotExtension < Extension
       attr_accessor :test
     end
-    @irc_proto = IrcProtoEvent.new('irc.proto')
+    @irc_proto = IrcProtoEvent.new('irc.proto', UserDb.new(), ChannelDb.new(), :gamesurge)
     @fn_registrar = FunctionRegistrar.new(@irc_proto, '!')
     @server = IrcServer.new('localhost')
     @server.connect
@@ -34,7 +36,7 @@ describe "Extension" do
   it "should be able to register and unregister its events" do
     class BotExtension
       def ext_load; event :privmsg, :privmsg; end
-      def privmsg(args); @test = args[:user]; end
+      def privmsg(args); @test = args[:target]; end
     end
     @irc_proto.parse_proto('PRIVMSG Aaron :Hello')
     @ext.test.should be_nil

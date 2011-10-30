@@ -13,7 +13,8 @@ describe "User" do
       h.should eq(@host)
       h.should be_kind_of(Regexp)
     end
-    @u.hosts_count.should eq(1)
+    @u.add_host('.*@lol\.com')
+    @u.hosts_count.should eq(2)
   end
 
   it "should remove hosts" do
@@ -107,6 +108,13 @@ describe "User" do
       s.fullhost.should eq('~Aaron@bitforge.ca')
       s.channels.should include('#c++', '#blackjack')
       s.online?.should be_true
+    end
+
+    it "shouldn't require all state" do
+      s = @u[:gamesurge]
+      s.set_state('~Aaron@bitforge.ca')
+      s.nick.should eq('Aaron')
+      s.host.should eq('bitforge.ca')
     end
 
     it "should wipe server state" do
