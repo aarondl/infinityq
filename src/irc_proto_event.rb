@@ -1,4 +1,6 @@
 require_relative 'irc_protocol_file_factory'
+require_relative 'channel/channel'
+require_relative 'user/user'
 require_relative 'exceptions'
 require_relative 'token_generator'
 

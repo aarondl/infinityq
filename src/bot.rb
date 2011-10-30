@@ -129,8 +129,10 @@ class Bot
 end
 
 if __FILE__ == $0
+  Thread.abort_on_exception = true
   Log::set_provider StdoutProvider.new()
   Bot::read_config
+  Bot::read_databases
   Bot::start
   loop do
     cmd = gets.chomp

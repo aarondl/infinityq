@@ -78,9 +78,9 @@ class FunctionRegistrar
   # @param [Hash] The arguments from the irc event.
   # @return [nil] Nil
   def call_privmsg(args)
-    argnames = @privmsg_args || [:user, :msg]
+    argnames = @privmsg_args || [:target, :msg]
     func = @functions[:private]
-    func = @functions[:public] if args[argnames[0]].start_with?('#')
+    func = @functions[:public] unless args[argnames[0]].class == String
     call_callbacks(argnames, func, args)
   end
 
