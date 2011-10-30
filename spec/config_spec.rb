@@ -69,7 +69,7 @@ describe "Bot" do
   it "should copy global values into the server-specific configs" do
     c = YAML::load_file(Bot::ConfigPath)
     Bot::read_config
-    Bot::Config[:servers][:gamesurge][:extensions].should eq(Bot::Config[:extensions])
+    Bot::Config[:servers][:bitforge][:extensions].should eq(Bot::Config[:extensions])
   end
 
   it "should die if no servers exist" do

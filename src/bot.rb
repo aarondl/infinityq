@@ -10,6 +10,12 @@ require_relative 'user/user_db'
 class Bot
   # The static config path to the config file
   ConfigPath = 'config.yml'
+  # The static database path to the database files
+  DbPath = './db/'
+  # The file name for the channel database.
+  ChanDbFile = 'channels.db'
+  # The file name for the user database.
+  UserDbFile = 'users.db'
   # The config hash that will contain the config details
   Config = {}
 
@@ -36,12 +42,63 @@ class Bot
     end
   end
 
+  # Opens file handles for the database files.
+  #
+  # @param [Block] A block that uses the file handles.
+  # @return [nil] Nil
+  def self.prep_db_read(&blk)
+    userio = File.exists?(DbPath + UserDbFile) ? File.new(DbPath + UserDbFile) : nil
+    chanio = File.exists?(DbPath + UserDbFile) ? File.new(DbPath + ChanDbFile) : nil
+    yield userio, chanio
+    userio.close unless userio.nil?
+    chanio.close unless chanio.nil?
+  end
+
   # Reads the user and channel database if available.
   #
+  # @param [IO] The io object to read the user database from.
+  # @param [IO] The io object to read the channel database from.
   # @return [nil] Nil
-  def self.read_databases
-    @@userdb = UserDb.new()
-    @@chandb = ChannelDb.new()
+  def self.read_databases(userio, chanio)
+    unless userio.nil?
+      @@userdb = Marshal::load(userio.read())
+    else
+      @@userdb = UserDb.new()
+    end
+
+    unless chanio.nil?
+      @@chandb = Marshal::load(chanio.read())
+    else
+      @@chandb = ChannelDb.new()
+    end
+  end
+
+  # Opens file handles for the database files.
+  #
+  # @param [Block] A block that uses the file handles.
+  # @return [nil] Nil
+  def self.prep_db_write(&blk)
+    unless Dir::exist?(DbPath)
+      Dir::mkdir(DbPath)
+    end
+
+    userio = File.new(DbPath + UserDbFile, "w+")
+    chanio = File.new(DbPath + ChanDbFile, "w+")
+    yield userio, chanio
+    userio.close
+    chanio.close
+  end
+
+  # Saves the databases to files
+  #
+  # @param [IO] An IO object to save the user database with
+  # @param [IO] An IO object to save the channel database with
+  # @return [nil] Nil
+  def self.save_databases(userio, chanio)
+    @@userdb.prepare_for_serialization
+    userio.write(Marshal::dump(@@userdb))
+    @@chandb.prepare_for_serialization
+    chanio.write(Marshal::dump(@@chandb))
   end
 
   # Validates a bot configuration.
@@ -132,7 +189,9 @@ if __FILE__ == $0
   Thread.abort_on_exception = true
   Log::set_provider StdoutProvider.new()
   Bot::read_config
-  Bot::read_databases
+  Bot::prep_db_read do |u, c|
+    Bot::read_databases u, c
+  end
   Bot::start
   loop do
     cmd = gets.chomp
@@ -152,5 +211,8 @@ if __FILE__ == $0
   end
 
   Bot::wait_until_death
+  Bot::prep_db_write do |u, c|
+    Bot::save_databases u, c
+  end
 end
 

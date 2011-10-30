@@ -2,9 +2,28 @@ require_relative '../src/bot'
 require_relative '../src/bot_instance'
 
 describe "Bot" do
-  it "should create a server object for each server in the config" do
+  before :each do
     Bot::read_config
-    Bot::read_databases
+
+    @userio = double('IO')
+    @chanio = double('IO')
+    @userstore = nil
+    @chanstore = nil
+    @userio.stub(:write) do |arg|; @userstore = arg; end
+    @chanio.stub(:write) do |arg|; @chanstore = arg; end
+    @userio.stub(:read) do |arg|; @userstore; end
+    @chanio.stub(:read) do |arg|; @chanstore; end
+
+    if ENV['INF_ENV'] == "TEST"
+      Bot::read_databases(@userstore ? @userio : nil, @chanstore ? @chanio : nil)
+    else
+      Bot::prep_db_read do |u, c|
+        Bot::read_databases(u, c)
+      end
+    end
+  end
+
+  it "should create a server object for each server in the config" do
     Bot::start
     Bot::Config[:servers].each_key do |k|
       Bot::instance(k).should be_kind_of(BotInstance)
@@ -12,8 +31,6 @@ describe "Bot" do
   end
 
   it "should iterate through all the servers" do
-    Bot::read_config
-    Bot::read_databases
     Bot::start
     Bot::each do |i|
       i.should be_kind_of(BotInstance)
@@ -22,8 +39,6 @@ describe "Bot" do
   end
 
   it "should wait until all other threads exit" do
-    Bot::read_config
-    Bot::read_databases
     Bot::start
     Bot::each do |i|
       i.halt
@@ -32,9 +47,33 @@ describe "Bot" do
   end
 
   it "should have a user and channel database" do
-    Bot::read_databases
     Bot::userdb.should_not be_nil
     Bot::chandb.should_not be_nil
+  end
+
+  it "should save databases and reload them from a file" do
+    u = User.new()
+    u.add_server(:gamesurge)
+    u[:gamesurge].set_state('~Aaron@bitforge.ca')
+    Bot::userdb.add(u)
+    u = User.new(true)
+    u.add_host(/.*@bettercoder\.net/i)
+    Bot::userdb.add(u)
+
+    if ENV['INF_ENV'] == "TEST"
+      Bot::save_databases(@userio, @chanio)
+      Bot::read_databases(@userio, @chanio)
+    else
+      Bot::prep_db_write do |u, c|
+        Bot::save_databases(u, c)
+      end
+      Bot::prep_db_read do |u, c|
+        Bot::read_databases(u, c)
+      end
+    end
+
+    Bot::userdb.find('~fish@bettercoder.net').should be_a(User)
+    Bot::userdb.find('Aaron@bitforge.ca').should be_nil
   end
 end
 
