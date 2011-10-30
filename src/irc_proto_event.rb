@@ -212,24 +212,36 @@ class IrcProtoEvent
     offset = from_msg ? 2 : 1
     args = {}
 
+    set_context = false
     if from_msg
       host = parts[0][1...parts[0].length]
-      user = @userdb.find(user)
+      user = @userdb.find(host)
       if user.nil?
         user = User.new()
-        user.add_server(@server_key)
-        user[@server_key].set_state(host, nil, nil)
         @userdb.add(user)
       end
+      if user[@server_key].nil?
+        user.add_server(@server_key)
+        user[@server_key].set_state(host)
+      end
       args[:from] = user
+      set_context = true
+    end
+
+    if set_context
+      args[:from].set_context(@server_key)
     end
 
     if event.has_key?(:rules)
-      pull_args(event[:rules], parts, args, offset)
+      pull_args(event[:rules], parts, args, set_context, offset)
     end
 
     event[:callbacks].each_value do |callback|
       callback.call args
+    end
+
+    if set_context
+      args[:from].set_context
     end
   end
 
@@ -261,8 +273,10 @@ class IrcProtoEvent
   # @param [Array<Hash>] Rule hashes in an array.
   # @param [Array<String>] A string-split of the irc message.
   # @param [Hash] The arguments to append to.
+  # @param [Bool] Whether or not to set channel contexts.
+  # @param [Fixnum] The offset into the args list.
   # @return [nil] Nil
-  def pull_args(rules, parts, args, offset = 0)
+  def pull_args(rules, parts, args, set_context, offset = 0)
     rules.each do |rule|
 
       name = rule[:name]
@@ -281,6 +295,11 @@ class IrcProtoEvent
         channel = parts[offset]
         if is_channel?(channel)
           channel = lookup_channel(channel)
+          if set_context
+            if args[:from][@server_key].channels.include?(channel.name)
+              args[:from].set_context(server_key, channel.name)
+            end
+          end
         end
         args[name] = channel
         offset += 1
@@ -302,7 +321,7 @@ class IrcProtoEvent
         if offset >= parts.length
           args[name] = nil
         else
-          args[name] = pull_args(rule[:args], parts[offset...parts.length], args)
+          args[name] = pull_args(rule[:args], parts[offset...parts.length], args, set_context)
           offset += 1
         end
       else

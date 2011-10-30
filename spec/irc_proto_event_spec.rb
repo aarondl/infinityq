@@ -182,14 +182,25 @@ describe "IrcProtoEvent" do
 
   it "should convert :from arg into a User object" do
     arguments = nil
-    @i.register(:notice, -> args {arguments = args})
+    @i.register(:notice, -> args {
+      arguments = args
+      arguments[:from].nick.should eq('fish') #Checks context
+    })
     @i.parse_proto(':fish@lol.com NOTICE Aaron :Hey man, wake up!')
     arguments[:from].should be_a(User)
   end
 
   it "should convert channel arguments into Channel objects" do
     arguments = nil
-    @i.register(:notice, -> args {arguments = args})
+    fish = User.new()
+    fish.add_server(@i.server_key)
+    fish.add_host(/fish@lol\.com/)
+    fish[@i.server_key].set_state('fish@lol.com', 'Fish!', ['#c++'])
+    @userdb.add(fish)
+    @i.register(:notice, -> args {
+      arguments = args
+      arguments[:from].channel_name.should eq('#c++') #Checks context
+    })
     @i.parse_proto(':fish@lol.com NOTICE #c++ :Hey man, wake up!')
     arguments[:target].should be_a(Channel)
   end

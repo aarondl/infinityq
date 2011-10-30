@@ -41,7 +41,7 @@ class UserDb
   def prepare_for_serialization
     newusers = []
     @users.each do |u|
-      if u.explicit
+      unless u.stateonly
         newusers.push(u)
         u.wipe_all_state
       end

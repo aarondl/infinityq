@@ -56,7 +56,7 @@ describe "Bot" do
     u.add_server(:gamesurge)
     u[:gamesurge].set_state('~Aaron@bitforge.ca')
     Bot::userdb.add(u)
-    u = User.new(true)
+    u = User.new(false)
     u.add_host(/.*@bettercoder\.net/i)
     Bot::userdb.add(u)
 

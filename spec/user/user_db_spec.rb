@@ -5,7 +5,7 @@ describe "UserDb" do
   before :each do
     @u = UserDb.new()
 
-    @user = User.new(true)
+    @user = User.new(false)
     @user.add_host(/.*@bitforge\.ca$/)
     @user.global_access.power = 10
     @user.global_access[Access::A]
@@ -56,7 +56,7 @@ describe "UserDb" do
   end
 
   it "should prepare to be serialized" do
-    @user.add_server :gamesurge, 10
+    @user.add_server :gamesurge, false, 10
     @user[:gamesurge].set_state '~aaron@bitforge.ca', 'Aaron L', ['#C++']
     @user[:gamesurge].nick.should_not be_nil
     @u.prepare_for_serialization

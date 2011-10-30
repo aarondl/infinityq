@@ -26,28 +26,30 @@ describe "User" do
     @u.global_access.power.should be_zero
   end
 
-  it "should be able to be marked as explicit" do
-    @u.explicit.should be_false
-    @u.explicit = true
-    @u.explicit.should be_true
+  it "should be able to be marked as stateonly" do
+    @u.stateonly.should be_true
+    @u.stateonly = false
+    @u.stateonly.should be_false
   end
 
   context "when it has some server access for :gamesurge" do
     before :each do
-      @u.add_server(:gamesurge, 50, Access::A)
+      @u.add_server(:gamesurge, false, 50, Access::A)
     end
 
     context "when it has channel access for #C++" do
       before :each do
-        @u[:gamesurge].add_channel('#C++', 100, Access::C)
+        @u[:gamesurge].add_channel('#C++', false, 100, Access::C)
       end
 
       it "should wipe all states" do
-        @u[:gamesurge].set_state('~Aaron@bitforge.ca', 'Aaron L', ['#C++', '#blackjack'])
-        @u[:gamesurge]['#C++'].set_state 'o'
+        s = @u[:gamesurge]
+        s.set_state('~Aaron@bitforge.ca', 'Aaron L', ['#C++', '#blackjack'])
+        s['#C++'].set_state 'o'
+        s['#blackjack'].should_not be_nil
         @u.wipe_all_state
-        @u[:gamesurge].online?.should be_false
-        @u[:gamesurge]['#C++'].online?.should be_false
+        s.online?.should be_false
+        s['#C++'].online?.should be_false
       end
 
       it "should set channel state" do
@@ -68,12 +70,45 @@ describe "User" do
         @u[:gamesurge]['#C++'].should be_nil
       end
 
+      it "should be able to fetch a context object" do
+        @u[:gamesurge].set_state('~Aaron@bitforge.ca', 'Aaron L', ['#C++', '#blackjack'])
+        @u[:gamesurge]['#C++'].set_state 'o'
+        @u.set_context(:gamesurge)
+        (@u.for_context(false) { |c| c }).should eq(@u[:gamesurge])
+        @u.set_context(:gamesurge, '#c++')
+        (@u.for_context do |c| c end).should eq(@u[:gamesurge]['#c++'])
+      end
+
       it "should allow context setting" do
-        @u.global_access.power = 10
+        @u[:gamesurge].set_state('~Aaron@bitforge.ca', 'Aaron L', ['#C++', '#blackjack'])
+        @u[:gamesurge]['#C++'].set_state 'o'
+
+        @u.access.power = 10
         @u.set_context(:gamesurge)
         (@u.access == 50).should be_true
+        s = @u[:gamesurge]
+        s.online?.should eq(@u.online?)
+        s.channels.should eq(@u.channels)
+        s.fullhost.should eq(@u.fullhost)
+        s.nick.should eq(@u.nick)
+        s.realname.should eq(@u.realname)
+
         @u.set_context(:gamesurge, '#C++')
         (@u.access == 100).should be_true 
+        c = @u[:gamesurge]['#c++']
+        s.online?.should eq(@u.online?)
+        s.channels.should eq(@u.channels)
+        s.fullhost.should eq(@u.fullhost)
+        s.nick.should eq(@u.nick)
+        s.realname.should eq(@u.realname)
+        c.has_mode?('o').should eq(@u.has_mode?('o'))
+        c.channel_name.should eq(@u.channel_name)
+        c.each_mode do |channel_mode|
+          @u.each_mode do |context_mode|
+            channel_mode.should eq(context_mode)
+          end
+        end
+
         @u.set_context
         (@u.access == 10).should be_true
       end
