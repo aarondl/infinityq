@@ -8,13 +8,15 @@ class ExtensionHost
   #
   # @param [String] The addition to the load path if any.
   # @param [Hash] The extension configurations.
+  # @param [Hash] The extension database.
   # @param [IrcServer] The IrcServer to load extensions with
   # @param [IrcProtoEvent] The IrcProtoEvent to load extensions with
   # @param [FunctionRegistrar] The FunctionRegistrar to load extensions with
   # @return [ExtensionHost] A new extension host instance.
-  def initialize(extension_path, extcfg, server, irc_proto, fn_registrar)
+  def initialize(extension_path, extcfg, extdb, server, irc_proto, fn_registrar)
     @server = server
     @extcfg = extcfg
+    @extdb = extdb
     @irc_proto = irc_proto
     @fn_registrar = fn_registrar
     @extensions = {}
@@ -33,7 +35,7 @@ class ExtensionHost
       load file_name(ext)
       sym = ext_sym(ext)
       cfg = @extcfg != nil ? @extcfg[ext] : nil
-      obj = Object.const_get(sym).new(cfg, @server, @irc_proto, @fn_registrar)
+      obj = Object.const_get(sym).new(cfg, @extdb, @server, @irc_proto, @fn_registrar)
       obj.ext_load if obj.respond_to?(:ext_load)
       @extensions[sym] = obj
     end

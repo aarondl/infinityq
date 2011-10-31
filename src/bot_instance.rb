@@ -13,15 +13,16 @@ class BotInstance
   # @param [Hash] The configuration to use.
   # @param [UserDb] A user database.
   # @param [ChannelDb] A channel database.
+  # @param [Hash] The extension database.
   # @return [BotInstance] A new BotInstance.
-  def initialize(c, userdb, chandb)
+  def initialize(c, userdb, chandb, extdb)
     @server = IrcServer.new c[:address], c[:port]
     @proto = IrcProtoEvent.new c[:proto], userdb, chandb, c[:key]
     @core_events = CoreEvents.new @server, @proto, c[:nick],
       c[:altnick], c[:email], c[:name]
     @fn_registrar = FunctionRegistrar.new @proto, c[:extprefix]
     @exthost = ExtensionHost.new c[:extpath], 
-      c[:extensioncfg], @server, @proto, @fn_registrar
+      c[:extensioncfg], extdb, @server, @proto, @fn_registrar
     @key = c[:key]
 
     @config = c

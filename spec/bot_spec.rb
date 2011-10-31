@@ -39,18 +39,26 @@ describe "Bot" do
 
     @userio = double('IO')
     @chanio = double('IO')
+    @extio = double('IO')
     @userstore = nil
     @chanstore = nil
+    @extstore = nil
     @userio.stub(:write) do |arg|; @userstore = arg; end
     @chanio.stub(:write) do |arg|; @chanstore = arg; end
+    @extio.stub(:write) do |arg|; @extstore = arg; end
     @userio.stub(:read) do |arg|; @userstore; end
     @chanio.stub(:read) do |arg|; @chanstore; end
+    @extio.stub(:read) do |arg|; @extstore; end
 
     if ENV['INF_ENV'] == "TEST"
-      Bot::read_databases(@userstore ? @userio : nil, @chanstore ? @chanio : nil)
+      Bot::read_databases(
+        @userstore ? @userio : nil,
+        @chanstore ? @chanio : nil,
+        @extstore ? @extio : nil
+      )
     else
-      Bot::prep_db_read do |u, c|
-        Bot::read_databases(u, c)
+      Bot::prep_db_read do |u, c, e|
+        Bot::read_databases(u, c, e)
       end
     end
   end
@@ -81,6 +89,7 @@ describe "Bot" do
   it "should have a user and channel database" do
     Bot::userdb.should_not be_nil
     Bot::chandb.should_not be_nil
+    Bot::extdb.should_not be_nil
   end
 
   it "should save databases and reload them from a file" do
@@ -92,20 +101,27 @@ describe "Bot" do
     u.add_host(/.*@bettercoder\.net/i)
     Bot::userdb.add(u)
 
+    c = Channel.new(:gamesurge, '#c++', false)
+    Bot::chandb.add(c)
+
+    Bot::extdb[:test] = :test
+
     if ENV['INF_ENV'] == "TEST"
-      Bot::save_databases(@userio, @chanio)
-      Bot::read_databases(@userio, @chanio)
+      Bot::save_databases(@userio, @chanio, @extio)
+      Bot::read_databases(@userio, @chanio, @extio)
     else
-      Bot::prep_db_write do |u, c|
-        Bot::save_databases(u, c)
+      Bot::prep_db_write do |u, c, e|
+        Bot::save_databases(u, c, e)
       end
-      Bot::prep_db_read do |u, c|
-        Bot::read_databases(u, c)
+      Bot::prep_db_read do |u, c, e|
+        Bot::read_databases(u, c, e)
       end
     end
 
     Bot::userdb.find('~fish@bettercoder.net').should be_a(User)
     Bot::userdb.find('Aaron@bitforge.ca').should be_nil
+    Bot::chandb[:gamesurge, '#c++'].should be_a(Channel)
+    Bot::extdb[:test].should eq(:test)
   end
 end
 

@@ -13,8 +13,9 @@ describe "ExtensionHost" do
     @irc_proto.stub(:unregister)
 
     extconfig = {'Test1' => {test: :load}}
+    extdb = {}
 
-    @e = ExtensionHost.new(@path, extconfig, 1, @irc_proto, @fn_registrar)
+    @e = ExtensionHost.new(@path, extconfig, extdb, 1, @irc_proto, @fn_registrar)
     @e.load_extensions 'Test1', 'Test 2'
   end
 
@@ -22,15 +23,16 @@ describe "ExtensionHost" do
     $:[$:.length-1].should eq(@e.path)
   end
 
-  it "should instantiate extensions with an IrcServer, IrcProtoEvent and FnRegistrar" do
+  it "should instantiate extensions with a config, db, IrcServer, IrcProtoEvent and FnRegistrar" do
     class Test1
-      attr_reader :irc_proto, :server, :fn_registrar, :cfg
+      attr_reader :irc_proto, :server, :fn_registrar, :cfg, :db
     end
     obj = @e.extension(:Test1)
     obj.server.should_not be_nil
     obj.irc_proto.should_not be_nil
     obj.fn_registrar.should_not be_nil
     obj.cfg.should_not be_nil
+    obj.db.should_not be_nil
   end
 
   it "should clean the load path" do

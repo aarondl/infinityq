@@ -14,7 +14,7 @@ describe "BotInstance" do
       extprefix: '.', key: :gamesurge
     }
 
-    @b = BotInstance.new(config, UserDb.new(), ChannelDb.new())
+    @b = BotInstance.new(config, UserDb.new(), ChannelDb.new(), {})
   end
 
   it "should take a configuration chunk to create it" do

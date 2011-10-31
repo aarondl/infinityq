@@ -16,6 +16,8 @@ class Bot
   ChanDbFile = 'channels.db'
   # The file name for the user database.
   UserDbFile = 'users.db'
+  # The file name for the extension storage database.
+  ExtensionDbFile = 'extension.db'
   # The config hash that will contain the config details
   Config = {}
 
@@ -32,7 +34,7 @@ class Bot
     
     validate_config
 
-    cascading = [:extensions, :extprefix, :extpath, :proto, :nick, :altnick, :name, :email]
+    cascading = [:extensions, :extensioncfg, :extprefix, :extpath, :proto, :nick, :altnick, :name, :email]
     Config[:servers].each do |k, v|
       cascading.each do |attrib|
         if Config.has_key?(attrib) && v.has_key?(attrib) == false
@@ -48,8 +50,9 @@ class Bot
   # @return [nil] Nil
   def self.prep_db_read(&blk)
     userio = File.exists?(DbPath + UserDbFile) ? File.new(DbPath + UserDbFile) : nil
-    chanio = File.exists?(DbPath + UserDbFile) ? File.new(DbPath + ChanDbFile) : nil
-    yield userio, chanio
+    chanio = File.exists?(DbPath + ChanDbFile) ? File.new(DbPath + ChanDbFile) : nil
+    extio = File.exists?(DbPath + ExtensionDbFile) ? File.new(DbPath + ExtensionDbFile) : nil
+    yield userio, chanio, extio
     userio.close unless userio.nil?
     chanio.close unless chanio.nil?
   end
@@ -58,8 +61,9 @@ class Bot
   #
   # @param [IO] The io object to read the user database from.
   # @param [IO] The io object to read the channel database from.
+  # @param [IO] The io object to read the extension database from.
   # @return [nil] Nil
-  def self.read_databases(userio, chanio)
+  def self.read_databases(userio, chanio, extio)
     unless userio.nil?
       @@userdb = Marshal::load(userio.read())
     else
@@ -70,6 +74,12 @@ class Bot
       @@chandb = Marshal::load(chanio.read())
     else
       @@chandb = ChannelDb.new()
+    end
+
+    unless extio.nil?
+      @@extdb = Marshal::load(extio.read())
+    else
+      @@extdb = {}
     end
   end
 
@@ -82,23 +92,27 @@ class Bot
       Dir::mkdir(DbPath)
     end
 
-    userio = File.new(DbPath + UserDbFile, "w+")
-    chanio = File.new(DbPath + ChanDbFile, "w+")
-    yield userio, chanio
+    userio = File.new(DbPath + UserDbFile, 'w+')
+    chanio = File.new(DbPath + ChanDbFile, 'w+')
+    extio = File.new(DbPath + ExtensionDbFile, 'w+')
+    yield userio, chanio, extio
     userio.close
     chanio.close
+    extio.close
   end
 
   # Saves the databases to files
   #
   # @param [IO] An IO object to save the user database with
   # @param [IO] An IO object to save the channel database with
+  # @param [IO] An IO object to save the extension database with
   # @return [nil] Nil
-  def self.save_databases(userio, chanio)
+  def self.save_databases(userio, chanio, extio)
     @@userdb.prepare_for_serialization
     userio.write(Marshal::dump(@@userdb))
     @@chandb.prepare_for_serialization
     chanio.write(Marshal::dump(@@chandb))
+    extio.write(Marshal::dump(@@extdb))
   end
 
   # Validates a bot configuration.
@@ -137,7 +151,7 @@ class Bot
     @@instances = {}
     Config[:servers].each do |k, v|
       v[:key] = k
-      @@instances[k] = BotInstance.new(v, @@userdb, @@chandb)
+      @@instances[k] = BotInstance.new(v, @@userdb, @@chandb, @@extdb)
       @@instances[k].start
     end
   end
@@ -182,6 +196,13 @@ class Bot
   # @return [ChannelDb] The channel database.
   def self.chandb
     @@chandb
+  end
+
+  # Gets the extension database for the bot.
+  #
+  # @return [Hash] The extension database.
+  def self.extdb
+    @@extdb
   end
 end
 
