@@ -13,45 +13,46 @@ class FunctionRegistrar
   def initialize(irc_proto, prefix)
     @irc_proto = irc_proto
     @prefix = prefix
-    @privmsg_args = irc_proto.privmsg_args?    
-    @notice_args = irc_proto.notice_args?
+    @privmsg_args = irc_proto.privmsg_args? || [:target, :msg]
+    @notice_args = irc_proto.notice_args? || [:target, :msg]
     @privmsg_token = nil
     @notice_token = nil
     @functions = {
-      public: {},
-      private: {},
-      notice: {}
+      privmsg: {public: {}, private: {}, both: {}},
+      notice: {public: {}, private: {}, both: {}},
+      both: {public: {}, private: {}, both: {}}
     }
   end
 
   # Registers a function with the IrcProtoEvent
   # instance.
   #
-  # @param [Symbol] The type of message (:public/:private/:notice)
+  # @param [Symbol] The type of message (:privmsg/:notice/:both)
+  # @param [Symbol] The publicity of the message (:public/:private/:both)
   # @param [Symbol] The callback method.
   # @param [String, RegExp] A matcher that must pass for the function to fire.
+  # @param [Hash] Access required (:access, :any_of, :all_of)
   # @return [Array] The unregistration token.
-  def register(msgtype, method, matchspec)
-    func = @functions[msgtype]
-    raise ArgumentError, 'Msgtype must be :public|:private|:notice' if func.nil?
+  def register(msgtype, publicity, method, matchspec, access_required = nil)
+    func = @functions[msgtype] && @functions[msgtype][publicity]
+    raise ArgumentError, 'Msgtype: [:notice|:privmsg|:both], Publicity: [:public|:private|:both]' if func.nil?
 
-    if msgtype == :notice
+    if msgtype == :notice || msgtype == :both
       if @notice_token == nil
-        @notice_token = 
-          @irc_proto.register(get_event(msgtype), self.method(get_method(msgtype)))
+        @notice_token = @irc_proto.register(:notice, self.method(:call_notice))
       end
-    else
+    end
+    if msgtype == :privmsg || msgtype == :both
       if @privmsg_token == nil
-        @privmsg_token =
-          @irc_proto.register(get_event(msgtype), self.method(get_method(msgtype)))
+        @privmsg_token = @irc_proto.register(:privmsg, self.method(:call_privmsg))
       end
     end
 
     matchspec = Regexp.new('^' + matchspec) if matchspec.kind_of?(String)
 
     localtoken = TokenGenerator::generate_token
-    func[localtoken] = {match: matchspec, callback: method}
-    return [msgtype, localtoken]
+    func[localtoken] = {match: matchspec, callback: method, access_req: access_required}
+    return [msgtype, publicity, localtoken]
   end
 
   # Collapses this instance removing all event
@@ -68,9 +69,9 @@ class FunctionRegistrar
   # @param [Array] The token given by the register function.
   # @return [nil] Nil
   def unregister(token)
-    func = @functions[token[0]]
+    func = @functions[token[0]][token[1]]
     raise ArgumentError, 'Bad token' if func.nil?
-    func.delete(token[1])
+    func.delete(token[2])
   end
 
   # Event handler for all public and private functions.
@@ -78,10 +79,7 @@ class FunctionRegistrar
   # @param [Hash] The arguments from the irc event.
   # @return [nil] Nil
   def call_privmsg(args)
-    argnames = @privmsg_args || [:target, :msg]
-    func = @functions[:private]
-    func = @functions[:public] unless args[argnames[0]].class == String
-    call_callbacks(argnames, func, args)
+    find_callbacks(@privmsg_args, :privmsg, args)
   end
 
   # Event handler for all notice functions.
@@ -89,56 +87,77 @@ class FunctionRegistrar
   # @param [Hash] The arguments from the irc event.
   # @return [nil] Nil
   def call_notice(args)
-    call_callbacks(@notice_args, @functions[:notice], args)
+    find_callbacks(@notice_args, :notice, args)
   end
 
-  # Calls the callbacks with the appropriate arguments.
+  # Finds and calls the callbacks with the appropriate arguments.
   #
   # @param [Array<Symbol>] Argument names to pass along.
-  # @param [Hash<Symbol, Hash>] The list of callbacks to call
+  # @param [Symbol] The msgtype that the event was invoked from.
   # @param [Hash] The arguments to pass to the callbacks.
   # @return [nil] Nil
-  def call_callbacks(argnames, func, args)
-    argnames = argnames || [:user, :msg]
+  def find_callbacks(argnames, msgtype, args)
     msg = args[argnames[1]]
-    return unless msg.start_with?(@prefix)
-    args = args.clone
-    msg = msg[1...msg.length]
     return if msg.empty?
+    publicity = args[argnames[0]].class == String ? :private : :public
+    if publicity == :public
+      return unless msg.start_with?(@prefix)
+      msg = msg[1...msg.length]
+    end
 
-    func.each do |token, registration|
-      if msg.match(registration[:match])
-        msg = msg.gsub(registration[:match], '')
-        msg = msg[1...msg.length] if msg.start_with?(' ')
-        args[argnames[1]] = msg
-        registration[:callback].call args
+    call_callbacks(
+      msg,
+      argnames,
+      args,
+      [msgtype, publicity], [msgtype, :both], [:both, publicity], [:both, :both]
+    )
+  end
+
+  # Calls the callbacks in a set of functions.
+  #
+  # @param [String] The message.
+  # @param [Array<Symbol>] The argument names.
+  # @param [Hash] The args to pass on.
+  # @param [Array<Array<Symbol>>] Array of arrays of function combos to call.
+  # @return [nil] Nil
+  def call_callbacks(msg, argnames, args, *functions)
+    functions.each do |combo|
+      fns = @functions[combo[0]][combo[1]]
+
+      fns.each do |token, registration|
+        if msg.match(registration[:match])
+          access_req = registration[:access_req]
+          unless access_req.nil?
+            next if args[:from].nil?
+            next unless has_access?(access_req, args[:from].access)
+          end
+
+          msg = msg.gsub(registration[:match], '')
+          msg = msg[1...msg.length] if msg.start_with?(' ')
+          args = args.clone
+          args[argnames[1]] = msg
+          registration[:callback].call args
+        end
       end
     end
   end
 
-  private
-  # Gets the event for a specific type of message.
+  # Verifies the access of a user to a function.
   #
-  # @param [Symbol] Type
-  # @return [Symbol] The event.
-  def get_event(type)
-    case type
-    when :public; return :privmsg
-    when :private; return :privmsg
-    when :notice; return :notice
-    else raise ArgumentError, 'Msgtype must be :public|:private|:notice'
+  # @param [Hash] The access required.
+  # @param [Access] The access of the user.
+  def has_access?(access_req, access)
+    unless access_req[:access].nil?
+      return false if access < access_req[:access]
     end
-  end
+    unless access_req[:any_of].nil?
+      return false unless access.has_any?(*access_req[:any_of].downcase.chars.to_a)
+    end
+    unless access_req[:all_of].nil?
+      return false unless access.has?(*access_req[:all_of].downcase.chars.to_a)
+    end
 
-  # Gets the handler for a specific type of message.
-  #
-  # @param [Symbol] Type
-  def get_method(type)
-    case type
-    when :public, :private; return :call_privmsg
-    when :notice; return :call_notice
-    else raise ArgumentError, 'Msgtype must be :public|:private|:notice'
-    end
+    return true
   end
 end
 

@@ -10,13 +10,7 @@ describe "Log" do
     Log::write 'hello', Log::Warning
     Log::write 'there', Log::Error
     Log::write 'sir'
-  end
-
-  it "should throw errors if no provider is set" do
     Log::set_provider nil
-    expect {
-      Log::write 'hello'
-    }.to raise_error(StandardError)
   end
 end
 

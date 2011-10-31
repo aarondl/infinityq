@@ -1,19 +1,21 @@
 require_relative '../src/irc_proto_event'
 require_relative '../src/irc_server'
 require_relative '../src/core_events'
+require_relative '../src/botstate'
 require_relative '../src/channel/channel_db'
 require_relative '../src/user/user_db'
 
 describe "CoreEvents" do
   before :each do
     @irc = IrcProtoEvent.new('irc.proto', UserDb.new(), ChannelDb.new(), :gamesurge)
+    @botstate = BotState.new()
     @server = IrcServer.new('localhost')
     @server.connect
     @c = get_core_evs(@server)
   end
 
   def get_core_evs(server)
-    return CoreEvents.new(server, @irc, 'irc', 'ircb', 'a@a.com', 'lol')
+    return CoreEvents.new(server, @irc, @botstate, 'irc', 'ircb', 'a@a.com', 'lol')
   end
 
   it "should attach to an IrcProto instance's ping event" do

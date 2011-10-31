@@ -42,6 +42,7 @@ class IrcServer
       raise IOError, 'Socket must be connected to write'
     end
     data.each do |d|
+      Log::write '=> ' + d
       n = @socket.write(d + "\r\n")
       if n != d.length + 2
         raise IOError, "Socket write didn't complete."

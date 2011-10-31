@@ -19,8 +19,9 @@ describe "Extension" do
     @server.connect
     @udb = double('UserDb')
     @cdb = double('ChanDb')
+    @botstate = double('BotState')
     @extdb = double('Store')
-    @ext = BotExtension.new({}, @extdb, @server, @irc_proto, @fn_registrar, @udb, @cdb)
+    @ext = BotExtension.new({}, @extdb, @server, @irc_proto, @fn_registrar, @botstate, @udb, @cdb)
   end
 
   it "should be inherited by aspiring modules" do
@@ -31,7 +32,7 @@ describe "Extension" do
     class BotExtension
       def ext_load; @test = true; end
     end
-    @ext = BotExtension.new(nil, nil, nil, nil, nil, nil, nil)
+    @ext = BotExtension.new(nil, nil, nil, nil, nil, nil, nil, nil)
     @ext.ext_load
     @ext.test.should be_true
   end
@@ -42,7 +43,7 @@ describe "Extension" do
     end
     s = Store.new()
     s[:test] = :test
-    @ext = BotExtension.new(nil, s, nil, nil, nil, nil, nil)
+    @ext = BotExtension.new(nil, s, nil, nil, nil, nil, nil, nil)
     @ext.db[:test].should eq(:test)
   end
 
@@ -64,15 +65,15 @@ describe "Extension" do
   it "should be able to register functions" do
     class BotExtension
       def ext_load
-        function :private, :help, /^help/
-        function :notice, :help, 'help'
-        function :public, :help, 'help'
+        function :privmsg, :private, :help, /^help/
+        function :notice, :private, :help, 'help'
+        function :privmsg, :public, :help, 'help'
       end
       def help(args); @test = args[:msg]; end
     end
     @ext.ext_load
     @ext.test.should be_nil
-    @irc_proto.parse_proto('PRIVMSG Aaron :!help me!')
+    @irc_proto.parse_proto('PRIVMSG Aaron :help me!')
     @ext.test.should eq('me!')
   end
 
@@ -100,15 +101,24 @@ describe "Extension" do
     @ext.f
   end
 
-  it "should have a nice way of accessing the db" do
+  it "should have a nice way of accessing various internals" do
     @extdb.should_receive(:[]=).with(:hello, :hi)
     @extdb.should_receive(:[]).with(:hello) { :hi }
     class BotExtension
       def use_db; db[:hello] = :hi; end
       def get_db; db[:hello]; end
+
+      def use_cfg; return cfg; end
+      def use_udb; return udb; end
+      def use_cdb; return cdb; end
+      def use_serv_sym; return svr; end
     end
     @ext.use_db
     @ext.get_db.should eq(:hi)
+    @ext.use_cfg.should_not be_nil
+    @ext.use_udb.should_not be_nil
+    @ext.use_cdb.should_not be_nil
+    @ext.use_serv_sym.should eq(@irc_proto.server_key)
   end
 end
 

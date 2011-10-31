@@ -13,11 +13,12 @@ class Extension
   # @param [UserDb] User database.
   # @param [ChanDb] Channel database.
   # @return [Extension] A new extension.
-  def initialize(cfg, extdb, server, irc_proto, fn_registrar, udb, cdb)
+  def initialize(cfg, extdb, server, irc_proto, fn_registrar, botstate, udb, cdb)
     @cfg = cfg
     @db = extdb
     @irc_proto = irc_proto
     @fn_registrar = fn_registrar
+    @botstate = botstate
     @udb = udb
     @cdb = cdb
     @server = server
@@ -39,12 +40,14 @@ class Extension
   # Registers function for this extension.
   # Ensuring that the token is kept for unregistration.
   #
-  # @param [Symbol] The type of message (:public/:private/:notice)
+  # @param [Symbol] The type of message (:privmsg/:notice/:both)
+  # @param [Symbol] The publicity of the message (:public/:private/:both)
   # @param [Symbol] The callback method.
   # @param [String, RegExp] A matcher that must pass for the function to fire.
+  # @param [Hash] Access required (:access, :any_of, :all_of)
   # @return [nil] Nil
-  def function(msgtype, method, matchspec)
-    @funcs.push @fn_registrar.register(msgtype, self.method(method), matchspec)
+  def function(msgtype, publicity, method, matchspec, access_required = nil)
+    @funcs.push @fn_registrar.register(msgtype, publicity, self.method(method), matchspec, access_required)
     return nil
   end
 
@@ -101,6 +104,34 @@ class Extension
   # @return [Store] The database object.
   def db
     return @db
+  end
+
+  # Helper method to get the configuration.
+  #
+  # @return [Hash] The configuration for this extension.
+  def cfg
+    return @cfg
+  end
+
+  # Helper method to get the user database.
+  #
+  # @return [UserDb] The user database object.
+  def udb
+    return @udb
+  end
+
+  # Helper method to get the channel database.
+  #
+  # @return [ChannelDb] The channel database object.
+  def cdb
+    return @cdb
+  end
+
+  # Helper method to get the server key.
+  #
+  # @return [Symbol] The server key.
+  def svr
+    return @irc_proto.server_key
   end
 end
 

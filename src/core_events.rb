@@ -7,14 +7,16 @@ class CoreEvents
   #
   # @param [IrcServer] The irc server to talk back to.
   # @param [IrcProtoEvent] IrcProtoEvent instance.
+  # @param [BotState] Botstate instance.
   # @param [String] Nickname for connecting.
   # @param [String] Altnickname for connecting.
   # @param [String] E-mail address for connecting.
   # @param [String] Realname for connecting.
   # @return [CoreEvents] A core events object.
-  def initialize(server, irc_proto, nick, altnick, email, name)
+  def initialize(server, irc_proto, botstate, nick, altnick, email, name)
     @server = server
     @irc_proto = irc_proto
+    @botstate = botstate
     @pings = 0
     @nickinuse = 0
 
@@ -48,10 +50,11 @@ class CoreEvents
   # @return [nil] Nil
   def nick_in_use(args)
     if @nickinuse == 0
-      @server.write(@irc_proto.helper.nick(@altnick))
+      @botstate.nick = @altnick
     else
-      @server.write(@irc_proto.helper.nick(@nick + ('_'*@nickinuse)))
+      @botstate.nick = @nick + ('_'*@nickinuse)
     end
+    @server.write(@irc_proto.helper.nick(@botstate.nick))
     @nickinuse += 1
   end
 

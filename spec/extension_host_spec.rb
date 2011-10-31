@@ -18,7 +18,9 @@ describe "ExtensionHost" do
     @udb = double('UserDb')
     @cdb = double('ChanDb')
 
-    @e = ExtensionHost.new(@path, @extconfig, @extdb, 1, @irc_proto, @fn_registrar, @udb, @cdb)
+    @botstate = double('BotState')
+
+    @e = ExtensionHost.new(@path, @extconfig, @extdb, 1, @irc_proto, @fn_registrar, @botstate, @udb, @cdb)
     @e.load_extensions 'Test1', 'Test 2'
   end
 
@@ -28,7 +30,7 @@ describe "ExtensionHost" do
 
   it "should instantiate extensions with a host of helpful objects" do
     class Test1
-      attr_reader :irc_proto, :server, :fn_registrar, :cfg, :db, :udb, :cdb
+      attr_reader :irc_proto, :server, :fn_registrar, :cfg, :db, :botstate, :udb, :cdb
     end
     obj = @e.extension(:Test1)
     obj.server.should_not be_nil
@@ -38,6 +40,7 @@ describe "ExtensionHost" do
     obj.db.should_not be_nil
     obj.udb.should_not be_nil
     obj.cdb.should_not be_nil
+    obj.botstate.should_not be_nil
   end
 
   it "should clean the load path" do

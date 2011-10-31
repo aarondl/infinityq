@@ -3,6 +3,7 @@ require_relative 'irc_proto_event'
 require_relative 'core_events'
 require_relative 'function_registrar'
 require_relative 'extension_host'
+require_relative 'botstate'
 
 # This class ties all the classes together
 # to create a bot instance.
@@ -16,13 +17,15 @@ class BotInstance
   # @param [Store] The extension database.
   # @return [BotInstance] A new BotInstance.
   def initialize(c, userdb, chandb, extdb)
+    @botstate = BotState.new
+    @botstate.nick = c[:nick]
     @server = IrcServer.new c[:address], c[:port]
     @proto = IrcProtoEvent.new c[:proto], userdb, chandb, c[:key]
-    @core_events = CoreEvents.new @server, @proto, c[:nick],
+    @core_events = CoreEvents.new @server, @proto, @botstate, c[:nick],
       c[:altnick], c[:email], c[:name]
     @fn_registrar = FunctionRegistrar.new @proto, c[:extprefix]
     @exthost = ExtensionHost.new c[:extpath], 
-      c[:extensioncfg], extdb, @server, @proto, @fn_registrar, userdb, chandb
+      c[:extensioncfg], extdb, @server, @proto, @fn_registrar, @botstate, userdb, chandb
     @key = c[:key]
 
     @config = c
@@ -41,7 +44,7 @@ class BotInstance
       protos = @server.read
       while protos != nil && @halt != true
         protos.each do |proto|
-          Log::write proto
+          Log::write "<= " + proto
           @proto.parse_proto(proto)
         end
         protos = @server.read
@@ -58,7 +61,7 @@ class BotInstance
     @thread.exit
   end
 
-  attr_reader :server, :proto, :core_events
+  attr_reader :server, :proto, :core_events, :botstate
   attr_reader :fn_registrar, :exthost, :key, :thread
 end
 

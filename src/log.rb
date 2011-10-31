@@ -22,7 +22,7 @@ class Log
   # @param [Fixnum] The log level @see Log
   # @return [nil] Nil
   def self.write(msg, level = Log::Information)
-    raise StandardError, 'Provider must not be nil.' if @@provider == nil
+    return if @@provider == nil
     case level
     when Log::Warning
       msg = 'Warning: ' + msg

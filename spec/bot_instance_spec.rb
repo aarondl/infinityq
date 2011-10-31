@@ -18,11 +18,12 @@ describe "BotInstance" do
   end
 
   it "should take a configuration chunk to create it" do
-    @b.server.should be_kind_of(IrcServer)
-    @b.proto.should be_kind_of(IrcProtoEvent)
-    @b.core_events.should be_kind_of(CoreEvents)
-    @b.exthost.should be_kind_of(ExtensionHost)
-    @b.fn_registrar.should be_kind_of(FunctionRegistrar)
+    @b.server.should be_a(IrcServer)
+    @b.proto.should be_a(IrcProtoEvent)
+    @b.core_events.should be_a(CoreEvents)
+    @b.exthost.should be_a(ExtensionHost)
+    @b.fn_registrar.should be_a(FunctionRegistrar)
+    @b.botstate.should be_a(BotState)
     @b.key.should eq(:gamesurge)
   end
   

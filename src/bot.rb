@@ -217,7 +217,19 @@ if __FILE__ == $0
   Bot::start
   loop do
     cmd = gets.chomp
-    break if cmd == 'quit'
+    case cmd
+    when 'quit'
+      break
+    when 'du'
+      puts YAML::dump(Bot::userdb)
+      next
+    when 'dc'
+      puts YAML::dump(Bot::chandb)
+      next
+    when 'de'
+      puts YAML::dump(Bot::extdb)
+      next
+    end
     split = cmd.split
     server = split[0].to_sym
     if server != nil
@@ -233,8 +245,8 @@ if __FILE__ == $0
   end
 
   Bot::wait_until_death
-  Bot::prep_db_write do |u, c|
-    Bot::save_databases u, c
+  Bot::prep_db_write do |u, c, e|
+    Bot::save_databases u, c, e
   end
 end
 

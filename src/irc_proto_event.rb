@@ -487,6 +487,7 @@ class IrcProtoEvent
     channel = @chandb[@server_key, name]
     if channel.nil?
       channel = Channel.new(@server_key, name)
+      @chandb.add(channel)
     end
     return channel
   end
