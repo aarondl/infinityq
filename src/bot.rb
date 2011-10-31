@@ -211,8 +211,8 @@ if __FILE__ == $0
   Thread.abort_on_exception = true
   Log::set_provider StdoutProvider.new()
   Bot::read_config
-  Bot::prep_db_read do |u, c|
-    Bot::read_databases u, c
+  Bot::prep_db_read do |u, c, e|
+    Bot::read_databases u, c, e
   end
   Bot::start
   loop do

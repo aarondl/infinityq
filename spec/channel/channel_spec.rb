@@ -8,7 +8,7 @@ describe "Channel" do
     @user = User.new()
     @user.add_host(/.*@bitforge\.ca/)
     @user.add_server(:gamesurge)
-    @user[:gamesurge].set_state('aaron@bitforge.ca', 'Aaron L', ['#c++'])
+    @user[:gamesurge].set_state('Aaron!aaron@bitforge.ca', 'Aaron L', ['#c++'])
   end
 
   it "should have a name" do
@@ -24,7 +24,7 @@ describe "Channel" do
   it "should keep a list of users" do
     @c.add_user(@user)
     @c['aaron'].should eq(@user)
-    @c['aaron@bitforge.ca'].should eq(@user)
+    @c['Aaron!aaron@bitforge.ca'].should eq(@user)
   end
 end
 

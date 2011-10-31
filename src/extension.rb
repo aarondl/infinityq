@@ -76,5 +76,31 @@ class Extension
   def irc
     @irc_proto.helper
   end
+
+  # Retrieves a user from the user database.
+  #
+  # @param [String] Nickname or Fullhost
+  # @return [User] A user object.
+  def find_user(user)
+    if user.include?('@')
+      return @udb.find(user)
+    end
+    return @udb.find_by_nick(@irc_proto.server_key, user)
+  end
+
+  # Retrieves a channel from the channel database.
+  #
+  # @param [String] Channel name.
+  # @return [Channel] The channel object.
+  def find_chan(chan)
+    return @cdb.find(@irc_proto.server_key, chan)
+  end
+
+  # Helper method to get the database
+  #
+  # @return [Store] The database object.
+  def db
+    return @db
+  end
 end
 

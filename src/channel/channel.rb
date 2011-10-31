@@ -24,7 +24,7 @@ class Channel < Store
     server_user = user[@server_key]
     throw StandardError, 'How did this happen?' if server_user.nil?
     @users[server_user.fullhost] = user
-    @nicks[server_user.nick] = user
+    @nicks[server_user.nick.downcase] = user
   end
 
   # Looks up a user by nick or by host.
@@ -35,7 +35,7 @@ class Channel < Store
     if lookup.include?('@')
       return @users[lookup]
     else
-      return @nicks[lookup]
+      return @nicks[lookup.downcase]
     end
   end
 

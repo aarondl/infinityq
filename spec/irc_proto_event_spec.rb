@@ -48,7 +48,7 @@ describe "IrcProtoEvent" do
   it "should parse irc protocol and dispatch events" do
     arguments = nil
     @i.register(:notice, -> args { arguments = args })
-    @i.parse_proto(':fish@lol.com NOTICE Aaron :Hey man, wake up!')
+    @i.parse_proto(':fish!~fish@lol.com NOTICE Aaron :Hey man, wake up!')
     arguments.should_not be_nil
     arguments.should include(
       target: 'Aaron',
@@ -61,10 +61,10 @@ describe "IrcProtoEvent" do
   it "should always dispatch to raw" do
     arguments = nil
     @i.register(:raw, -> args { arguments = args })
-    @i.parse_proto(':fish@lol.com PEWPEW hello there!')
+    @i.parse_proto(':fish!~fish@lol.com PEWPEW hello there!')
     arguments.should_not be_nil
     arguments.should include(
-      from: 'fish@lol.com',
+      from: 'fish!~fish@lol.com',
       raw: 'PEWPEW hello there!'
     )
     @i.parse_proto('PEWPEW hi') #Test coverage
@@ -75,7 +75,7 @@ describe "IrcProtoEvent" do
     @i.clear
     @i.register(:notice, -> {})
     expect {
-      @i.parse_proto(':fish@lol.com NOTICE')
+      @i.parse_proto(':fish!~fish@lol.com NOTICE')
     }.to raise_error(IrcProtoEvent::ProtocolParseError)
     @i.clear
   end
@@ -186,7 +186,7 @@ describe "IrcProtoEvent" do
       arguments = args
       arguments[:from].nick.should eq('fish') #Checks context
     })
-    @i.parse_proto(':fish@lol.com NOTICE Aaron :Hey man, wake up!')
+    @i.parse_proto(':fish!~fish@lol.com NOTICE Aaron :Hey man, wake up!')
     arguments[:from].should be_a(User)
   end
 
@@ -195,13 +195,13 @@ describe "IrcProtoEvent" do
     fish = User.new()
     fish.add_server(@i.server_key)
     fish.add_host(/fish@lol\.com/)
-    fish[@i.server_key].set_state('fish@lol.com', 'Fish!', ['#c++'])
+    fish[@i.server_key].set_state('fish!~fish@lol.com', 'Fish!', ['#c++'])
     @userdb.add(fish)
     @i.register(:notice, -> args {
       arguments = args
       arguments[:from].channel_name.should eq('#c++') #Checks context
     })
-    @i.parse_proto(':fish@lol.com NOTICE #c++ :Hey man, wake up!')
+    @i.parse_proto(':fish!~fish@lol.com NOTICE #c++ :Hey man, wake up!')
     arguments[:target].should be_a(Channel)
   end
 end

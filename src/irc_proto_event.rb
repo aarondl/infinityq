@@ -296,7 +296,7 @@ class IrcProtoEvent
         if is_channel?(channel)
           channel = lookup_channel(channel)
           if set_context
-            if args[:from][@server_key].channels.include?(channel.name)
+            if args[:from][@server_key].channels != nil && args[:from][@server_key].channels.include?(channel.name)
               args[:from].set_context(server_key, channel.name)
             end
           end

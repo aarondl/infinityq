@@ -83,5 +83,32 @@ describe "Extension" do
     @ext.gogo
   end
 
+  it "should be able to find a user by host or nick" do
+    @udb.should_receive(:find).with('Aaron!aaron@bitforge.ca')
+    @udb.should_receive(:find_by_nick).with(:gamesurge, 'aaron')
+    class BotExtension
+      def f; find_user 'aaron'; find_user 'Aaron!aaron@bitforge.ca' end
+    end
+    @ext.f
+  end
+
+  it "should be able to find a channel by name" do
+    @cdb.should_receive(:find).with(:gamesurge, '#C++')
+    class BotExtension
+      def f; find_chan '#C++'; end
+    end
+    @ext.f
+  end
+
+  it "should have a nice way of accessing the db" do
+    @extdb.should_receive(:[]=).with(:hello, :hi)
+    @extdb.should_receive(:[]).with(:hello) { :hi }
+    class BotExtension
+      def use_db; db[:hello] = :hi; end
+      def get_db; db[:hello]; end
+    end
+    @ext.use_db
+    @ext.get_db.should eq(:hi)
+  end
 end
 

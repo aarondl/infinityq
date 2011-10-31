@@ -95,7 +95,7 @@ describe "Bot" do
   it "should save databases and reload them from a file" do
     u = User.new()
     u.add_server(:gamesurge)
-    u[:gamesurge].set_state('~Aaron@bitforge.ca')
+    u[:gamesurge].set_state('Aaron!~Aaron@bitforge.ca')
     Bot::userdb.add(u)
     u = User.new(false)
     u.add_host(/.*@bettercoder\.net/i)
@@ -118,8 +118,8 @@ describe "Bot" do
       end
     end
 
-    Bot::userdb.find('~fish@bettercoder.net').should be_a(User)
-    Bot::userdb.find('Aaron@bitforge.ca').should be_nil
+    Bot::userdb.find('fish!~fish@bettercoder.net').should be_a(User)
+    Bot::userdb.find('Aaron!~Aaron@bitforge.ca').should be_nil
     Bot::chandb[:gamesurge, '#c++'].should be_a(Channel)
     Bot::extdb[:test].should eq(:test)
   end

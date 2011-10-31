@@ -67,7 +67,7 @@ describe "User" do
       end
 
       it "should wipe all states" do
-        @s.set_state('~Aaron@bitforge.ca', 'Aaron L', ['#C++', '#blackjack'])
+        @s.set_state('Aaron!~aaron@bitforge.ca', 'Aaron L', ['#C++', '#blackjack'])
         @s['#C++'].set_state 'o'
         @s['#blackjack'].should_not be_nil
         @u.wipe_all_state
@@ -93,7 +93,7 @@ describe "User" do
       end
 
       it "should be able to fetch a context object" do
-        @s.set_state('~Aaron@bitforge.ca', 'Aaron L', ['#C++', '#blackjack'])
+        @s.set_state('Aaron!~aaron@bitforge.ca', 'Aaron L', ['#C++', '#blackjack'])
         @c.set_state 'o'
         @u.set_context(:gamesurge)
         (@u.for_context(false) { |c| c }).should eq(@s)
@@ -102,7 +102,7 @@ describe "User" do
       end
 
       it "should allow context setting" do
-        @s.set_state('~Aaron@bitforge.ca', 'Aaron L', ['#C++', '#blackjack'])
+        @s.set_state('Aaron!~aaron@bitforge.ca', 'Aaron L', ['#C++', '#blackjack'])
         @c.set_state 'o'
 
         @u.access.power = 10
@@ -111,6 +111,7 @@ describe "User" do
         @s.online?.should eq(@u.online?)
         @s.channels.should eq(@u.channels)
         @s.fullhost.should eq(@u.fullhost)
+        @s.user.should eq(@u.user)
         @s.nick.should eq(@u.nick)
         @s.realname.should eq(@u.realname)
 
@@ -119,6 +120,7 @@ describe "User" do
         @s.online?.should eq(@u.online?)
         @s.channels.should eq(@u.channels)
         @s.fullhost.should eq(@u.fullhost)
+        @s.user.should eq(@u.user)
         @s.nick.should eq(@u.nick)
         @s.realname.should eq(@u.realname)
         @c.has_mode?('o').should eq(@u.has_mode?('o'))
@@ -155,19 +157,21 @@ describe "User" do
 
     it "should set server state" do
       @s.online?.should be_false
-      @s.set_state('~Aaron@bitforge.ca', 'Aaron L', ['#C++', '#blackjack'])
+      @s.set_state('Aaron!~aaron@bitforge.ca', 'Aaron L', ['#C++', '#blackjack'])
       @s.nick.should eq('Aaron')
+      @s.user.should eq('~aaron')
       @s.host.should eq('bitforge.ca')
       @s.realname.should eq('Aaron L')
-      @s.fullhost.should eq('~Aaron@bitforge.ca')
+      @s.fullhost.should eq('Aaron!~aaron@bitforge.ca')
       @s.channels.should include('#c++', '#blackjack')
       @s.online?.should be_true
     end
 
     it "shouldn't require all state" do
-      @s.set_state('~Aaron@bitforge.ca')
+      @s.set_state('Aaron!~Aaron@bitforge.ca')
       @s.nick.should eq('Aaron')
       @s.host.should eq('bitforge.ca')
+      @s.user.should eq('~Aaron')
     end
 
     it "should wipe server state" do

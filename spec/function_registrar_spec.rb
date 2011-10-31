@@ -43,10 +43,10 @@ describe "FunctionRegistrar" do
 
   it "should respond to privmsg to a user" do
     @f.register(:notice, -> args { @test = args}, 'yo')
-    @i.parse_proto(':fish@fish.com PRIVMSG Aaron :!hi there')
+    @i.parse_proto(':fish!fish@fish.com PRIVMSG Aaron :!hi there')
     @test.should_not be_nil
     @test.should include(msg: 'there')
-    @i.parse_proto(':fish@fish.com NOTICE Aaron :!yo budday!')
+    @i.parse_proto(':fish!fish@fish.com NOTICE Aaron :!yo budday!')
     @test.should_not be_nil
     @test.should include(msg: 'budday!')
   end

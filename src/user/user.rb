@@ -42,7 +42,7 @@ class ServerUser < Store
   #
   # @return [nil] Nil
   def wipe_state
-    @fullhost = @host = @nick = @realname = @chanlist = nil
+    @fullhost = @host = @nick = @user = @realname = @chanlist = nil
     @online = false
 
     new_channels = {}
@@ -102,25 +102,18 @@ class ServerUser < Store
     return @online
   end
 
-  attr_reader :fullhost
-  attr_reader :host
-  attr_reader :nick
-  attr_reader :realname
-    
-  attr_reader :access
-  attr_reader :server_key
-
+  attr_reader :fullhost, :host, :nick, :user, :realname
+  attr_reader :access, :server_key
   attr_accessor :stateonly
 
   private
   def fullhost=(value)
     @fullhost = value
     split = value.split('@')
-    if split[0].start_with?('~')
-      split[0] = split[0][1...split[0].length]
-    end
-    @nick = split[0]
     @host = split[1]
+    split = split[0].split('!')
+    @nick = split[0]
+    @user = split[1]
   end
 end
 
@@ -395,6 +388,13 @@ class User < Store
   # @return [String] The host.
   def host
     return for_context(nil, false) { |c| c.host }
+  end
+
+  # Gets the user for the ServerUser context.
+  #
+  # @return [String] The user.
+  def user
+    return for_context(nil, false) { |c| c.user }
   end
 
   # Gets the nick for the ServerUser context.
