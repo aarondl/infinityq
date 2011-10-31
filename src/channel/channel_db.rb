@@ -23,7 +23,17 @@ class ChannelDb
   #
   # @param [Symbol] The server to look up.
   # @param [String] The name of the channel.
+  # @return [Channel] The channel object.
   def [](server_key, name)
+    return find(server_key, name)
+  end
+
+  # Retrieves a channel object from the db.
+  #
+  # @param [Symbol] The server to look up.
+  # @param [String] The name of the channel.
+  # @return [Channel] The channel object.
+  def find(server_key, name)
     name = name.downcase
     if @servers.has_key?(server_key)
       return @servers[server_key][name]

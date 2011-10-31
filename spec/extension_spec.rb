@@ -17,7 +17,10 @@ describe "Extension" do
     @fn_registrar = FunctionRegistrar.new(@irc_proto, '!')
     @server = IrcServer.new('localhost')
     @server.connect
-    @ext = BotExtension.new({}, {}, @server, @irc_proto, @fn_registrar)
+    @udb = double('UserDb')
+    @cdb = double('ChanDb')
+    @extdb = double('Store')
+    @ext = BotExtension.new({}, @extdb, @server, @irc_proto, @fn_registrar, @udb, @cdb)
   end
 
   it "should be inherited by aspiring modules" do
@@ -28,7 +31,7 @@ describe "Extension" do
     class BotExtension
       def ext_load; @test = true; end
     end
-    @ext = BotExtension.new(nil, nil, nil, nil, nil)
+    @ext = BotExtension.new(nil, nil, nil, nil, nil, nil, nil)
     @ext.ext_load
     @ext.test.should be_true
   end
@@ -37,7 +40,9 @@ describe "Extension" do
     class BotExtension
       attr_reader :db
     end
-    @ext = BotExtension.new(nil, {test: :test}, nil, nil, nil)
+    s = Store.new()
+    s[:test] = :test
+    @ext = BotExtension.new(nil, s, nil, nil, nil, nil, nil)
     @ext.db[:test].should eq(:test)
   end
 

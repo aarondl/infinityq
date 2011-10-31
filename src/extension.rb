@@ -6,16 +6,20 @@ class Extension
   # current connections IrcProtoEvent instance.
   #
   # @param [Hash] Configuration passed in from the bot config file.
-  # @param [Hash] The extension database.
+  # @param [Store] The extension database.
   # @param [IrcServer] The irc server to send data to.
   # @param [IrcProtoEvent] The IrcProtoEvent for the connection.
   # @param [FunctionRegistrar] A function registrar to register functions.
+  # @param [UserDb] User database.
+  # @param [ChanDb] Channel database.
   # @return [Extension] A new extension.
-  def initialize(cfg, extdb, server, irc_proto, fn_registrar)
+  def initialize(cfg, extdb, server, irc_proto, fn_registrar, udb, cdb)
     @cfg = cfg
     @db = extdb
     @irc_proto = irc_proto
     @fn_registrar = fn_registrar
+    @udb = udb
+    @cdb = cdb
     @server = server
     @tokens = []
     @funcs = []

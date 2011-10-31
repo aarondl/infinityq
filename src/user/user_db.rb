@@ -50,6 +50,15 @@ class UserDb
     @users = newusers
     flush_cache
   end
+
+  # Finds a user in the @users array
+  # using a fullhost.
+  #
+  # @param [String] The full host.
+  # @return [User] A user object.
+  def [](host)
+    return find(host)
+  end
   
   # Finds a user in the @users array
   # using a fullhost.

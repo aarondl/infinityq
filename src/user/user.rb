@@ -1,8 +1,9 @@
 require_relative 'access'
+require_relative '../store'
 
 # Stores server state and access information about
 # a user.
-class ServerUser
+class ServerUser < Store
   # Creates a server user with optional access.
   #
   # @param [Symbol] The servers key.
@@ -52,27 +53,6 @@ class ServerUser
       end
     end
     @channels = new_channels
-  end
-
-  # Stores persistent data on the server user object.
-  #
-  # @param [Symbol, String] The key to this object.
-  # @param [Object] Some object to store.
-  # @return [nil] Nil
-  def store(key, value)
-    if @storage.nil?
-      @storage = {}
-    end
-    @storage[key] = value
-  end
-
-  # Fetches persistent data on the server user object.
-  #
-  # @param [Symbol, String] The key to this object.
-  # @return [Object] The object that was previously stored.
-  def fetch(key)
-    return nil if @storage.nil?
-    return @storage[key]
   end
 
   # Adds a channel with optional access to
@@ -146,7 +126,7 @@ end
 
 # Stores channel state and access information about
 # a user.
-class ChannelUser
+class ChannelUser < Store
   # Creates a channel user with optional access.
   #
   # @param [String] The channel name.
@@ -174,27 +154,6 @@ class ChannelUser
   # @return [Bool] If the mode was found.
   def has_mode?(mode)
     return @modes.include?(mode)
-  end
-
-  # Stores persistent data on the channel user object.
-  #
-  # @param [Symbol, String] The key to this object.
-  # @param [Object] Some object to store.
-  # @return [nil] Nil
-  def store(key, value)
-    if @storage.nil?
-      @storage = {}
-    end
-    @storage[key] = value
-  end
-
-  # Fetches persistent data on the channel user object.
-  #
-  # @param [Symbol, String] The key to this object.
-  # @return [Object] The object that was previously stored.
-  def fetch(key)
-    return nil if @storage.nil?
-    return @storage[key]
   end
 
   # Wipes the state for the channel.
@@ -228,8 +187,7 @@ class ChannelUser
 end
 
 # This class represents an irc user.
-class User
-
+class User < Store
   # Creates a new user with no global access
   # and and empty hosts array.
   #
@@ -313,10 +271,7 @@ class User
   def store(key, value)
     obj = for_context(self) { |c| c.store(key, value); c }
     return if obj != self 
-    if @storage.nil?
-      @storage = {}
-    end
-    @storage[key] = value
+    super(key, value)
   end
 
   # Fetches persistent data on the user object.
@@ -328,8 +283,7 @@ class User
     if obj != self
       return obj.fetch(key)
     end
-    return nil if @storage.nil?
-    return @storage[key]
+    return super(key)
   end
 
   # Sets the context for the access method.

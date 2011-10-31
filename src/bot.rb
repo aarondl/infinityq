@@ -3,6 +3,7 @@ require_relative 'log'
 require_relative 'stdout_provider'
 require_relative 'bot_instance'
 require_relative 'exceptions'
+require_relative 'store'
 require_relative 'channel/channel_db'
 require_relative 'user/user_db'
 
@@ -79,7 +80,7 @@ class Bot
     unless extio.nil?
       @@extdb = Marshal::load(extio.read())
     else
-      @@extdb = {}
+      @@extdb = Store.new()
     end
   end
 

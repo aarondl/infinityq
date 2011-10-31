@@ -1,5 +1,7 @@
+require_relative '../store'
+
 # This class represents an irc channel.
-class Channel
+class Channel < Store
   # Creates a new channel with a name.
   #
   # @param [Symbol] The server key.
@@ -23,27 +25,6 @@ class Channel
     throw StandardError, 'How did this happen?' if server_user.nil?
     @users[server_user.fullhost] = user
     @nicks[server_user.nick] = user
-  end
-
-  # Stores persistent data on the channel object.
-  #
-  # @param [Symbol, String] The key to this object.
-  # @param [Object] Some object to store.
-  # @return [nil] Nil
-  def store(key, value)
-    if @storage.nil?
-      @storage = {}
-    end
-    @storage[key] = value
-  end
-
-  # Fetches persistent data on the channel object.
-  #
-  # @param [Symbol, String] The key to this object.
-  # @return [Object] The object that was previously stored.
-  def fetch(key)
-    return nil if @storage.nil?
-    return @storage[key]
   end
 
   # Looks up a user by nick or by host.

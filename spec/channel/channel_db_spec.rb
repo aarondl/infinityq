@@ -10,6 +10,7 @@ describe "ChannelDb" do
 
   it "should keep a list of channels" do
     @c[:gamesurge, '#c++'].should_not be_nil
+    @c.find(:gamesurge, '#blackjack').should_not be_nil
   end
 
   it "should prepare seralizization" do

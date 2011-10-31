@@ -34,6 +34,7 @@ describe "UserDb" do
   it "should be able to find a user based on host" do
     @u.find('~aaron@bitforge.ca').should eq(@user)
     @u.find('lol').should be_nil
+    @u['~aaron@bitforge.ca'].should eq(@user)
   end
 
   it "should cache lookups" do
