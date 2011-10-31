@@ -220,10 +220,8 @@ class IrcProtoEvent
         user = User.new()
         @userdb.add(user)
       end
-      if user[@server_key].nil?
-        user.add_server(@server_key)
-        user[@server_key].set_state(host)
-      end
+      user.add_server(@server_key) if user[@server_key].nil?
+      user[@server_key].set_state(host) unless user[@server_key].online?
       args[:from] = user
       set_context = true
     end
@@ -318,9 +316,7 @@ class IrcProtoEvent
         args[name] = parts[offset...parts.length].join(' ')
         return
       when :optional
-        if offset >= parts.length
-          args[name] = nil
-        else
+        if offset < parts.length
           args[name] = pull_args(rule[:args], parts[offset...parts.length], args, set_context)
           offset += 1
         end

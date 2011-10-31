@@ -229,7 +229,14 @@ if __FILE__ == $0
     when 'de'
       puts YAML::dump(Bot::extdb)
       next
+    when /^rl ([a-z_0-9]+)/i
+      puts "Reloading #{$1}"
+      Bot::each do |botinstance|
+        botinstance.exthost.unload_extensions($1)
+        botinstance.exthost.load_extensions($1)
+      end
     end
+
     split = cmd.split
     server = split[0].to_sym
     if server != nil

@@ -1,5 +1,5 @@
-:nick: infinityq
-:altnick: infinityqq
+:nick: iq
+:altnick: infinityq
 :name: Infinity Ruby Bot
 :email: dev@null.rb
 :proto: irc.proto
@@ -7,7 +7,10 @@
 :extpath: ./extensions/
 :extensions:
   - Test_2
+:extensioncfg:
+  Test1:
+    :test: :load
 :servers:
-  :gamesurge:
+  :bitforge:
     :address: localhost
 

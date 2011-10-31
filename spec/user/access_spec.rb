@@ -91,5 +91,18 @@ describe "Access" do
     e.power.should eq(50)
     d.has?(Access::B, Access::C, Access::D).should be_true
   end
+
+  it "should not have awful output when tostring'd" do
+    Access.new(20, Access::B, Access::C).to_s.should match(/20::bc/)
+    Access.new(20).to_s.should eq('20')
+    Access.new(0, Access::B, Access::A).to_s.should eq('ab')
+    Access.new().to_s.should eq('none')
+  end
+
+  it "should not have awkward edge cases" do
+    expect {
+      a = Access.new(100, *('a'..'z').to_a)
+    }.to_not raise_error
+  end
 end
 

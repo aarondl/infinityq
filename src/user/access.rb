@@ -147,7 +147,7 @@ class Access
   # @param [Fixnum] Value to check against.
   # @return [Bool] power > value
   def >(value)
-    return (@access >> 25) > value
+    return (@access >> 26) > value
   end
 
   # Compares power with value.
@@ -155,7 +155,7 @@ class Access
   # @param [Fixnum] Value to check against.
   # @return [Bool] power < value
   def <(value)
-    return (@access >> 25) < value
+    return (@access >> 26) < value
   end
 
   # Compares power with value.
@@ -163,7 +163,7 @@ class Access
   # @param [Fixnum] Value to check against.
   # @return [Bool] power == value
   def ==(value)
-    return (@access >> 25) == value
+    return (@access >> 26) == value
   end
 
   # Sets the value for power within 0..10000
@@ -172,14 +172,14 @@ class Access
   # @return [nil] Nil
   def power=(value)
     raise ArgumentError, 'Value must be [0..100]' unless (0..100).include?(value)
-    @access = flags + (value << 25)
+    @access = flags + (value << 26)
   end
 
   # Gets the value of power
   #
   # @return [Fixnum] Power
   def power
-    return @access >> 25
+    return @access >> 26
   end
 
   # Gets the flags
@@ -189,5 +189,28 @@ class Access
     return @access & 0x1FFFFFF
   end
 
+  # Pretty print for access
+  #
+  # @return [String] A string depicting this instance.
+  def to_s
+    return 'none' if @access == 0
+
+    flags = ''
+    for i in (0...26)
+      if (@access & (1 << i)) != 0
+        flags += (i + 'a'.ord).chr
+      end
+    end
+    str = ''
+    unless power == 0
+      str += power.to_s
+    end
+    unless flags.empty?
+      str += '::' unless str.empty?
+      str += flags
+    end
+
+    return str
+  end
 end
 

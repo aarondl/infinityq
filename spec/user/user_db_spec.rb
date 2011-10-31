@@ -38,7 +38,7 @@ describe "UserDb" do
 
   it "should be able to find a user based on host" do
     @u.find(@host).should eq(@user)
-    @u.find('lol').should be_nil
+    @u['lol'].should be_nil
   end
 
   it "should be able to find a user based on nick" do

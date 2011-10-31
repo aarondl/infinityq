@@ -104,6 +104,15 @@ describe "IrcProtoEvent" do
     )
   end
 
+  it "should disregard missing optional arguments" do
+    arguments = nil
+    @i.register(:topic, -> args { arguments = args })
+    @i.parse_proto('TOPIC #channel')
+    arguments.should include(:channel)
+    arguments[:topic].should be_nil
+    arguments[:channel].should be_a(Channel)
+  end
+
   it "should parse csvlists" do
     event = @i.send(:parse_event, 'NAMES *listname')[:rules][0]
     event.should include(rule: :csvlist, name: :listname)
