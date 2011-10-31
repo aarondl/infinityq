@@ -9,6 +9,8 @@ describe "UserDb" do
     @user.add_host(/.*@bitforge\.ca$/)
     @user.global_access.power = 10
     @user.global_access[Access::A]
+    @user.add_server(:gamesurge)
+    @user[:gamesurge].set_state('~Aaron@bitforge.ca')
 
     @u.add(@user)
   end
@@ -34,19 +36,29 @@ describe "UserDb" do
   it "should be able to find a user based on host" do
     @u.find('~aaron@bitforge.ca').should eq(@user)
     @u.find('lol').should be_nil
-    @u['~aaron@bitforge.ca'].should eq(@user)
+  end
+
+  it "should be able to find a user based on nick" do
+    @u.find_by_nick(:gamesurge, 'aaron').should eq(@user)
+    @u.find_by_nick(:gamesurge, 'lol').should be_nil
   end
 
   it "should cache lookups" do
     @u.find('~aaron@bitforge.ca').should eq(@user)
+    @u.find_by_nick(:gamesurge, 'aaron').should eq(@user)
     @u.instance_variable_get(:@cache).should include('~aaron@bitforge.ca')
     @u.instance_variable_get(:@cache)['~aaron@bitforge.ca'].should eq(@user)
+    @u.instance_variable_get(:@nick_cache).should include(:gamesurge)
+    @u.instance_variable_get(:@nick_cache)[:gamesurge].should include('aaron')
+    @u.instance_variable_get(:@nick_cache)[:gamesurge]['aaron'].should eq(@user)
   end
 
   it "should be able to flush the cache" do
     @u.find('~aaron@bitforge.ca').should eq(@user)
+    @u.find_by_nick(:gamesurge, 'aaron').should eq(@user)
     @u.flush_cache
     @u.instance_variable_get(:@cache).should be_empty
+    @u.instance_variable_get(:@nick_cache).should be_empty
   end
 
   it "should invalidate cache for a host" do
@@ -54,6 +66,22 @@ describe "UserDb" do
     @u.instance_variable_get(:@cache).should include('~aaron@bitforge.ca')
     @u.invalidate_cache('~aaron@bitforge.ca')
     @u.instance_variable_get(:@cache).should be_empty
+  end
+
+  it "should be able to invalidate the cache for a server" do
+    @u.find_by_nick(:gamesurge, 'aaron')
+    @u.instance_variable_get(:@nick_cache).should include(:gamesurge)
+    @u.invalidate_nick_cache(:gamesurge)
+    @u.instance_variable_get(:@nick_cache).should_not include(:gamesurge)
+  end
+
+  it "should be able to invalidate the cache for a nickname" do
+    @u.find_by_nick(:gamesurge, 'aaron')
+    @u.instance_variable_get(:@nick_cache).should include(:gamesurge)
+    @u.instance_variable_get(:@nick_cache)[:gamesurge].should include('aaron')
+    @u.instance_variable_get(:@nick_cache)[:gamesurge]['aaron'].should eq(@user)
+    @u.invalidate_nick_cache(:gamesurge, 'aaron')
+    @u.instance_variable_get(:@nick_cache)[:gamesurge].should_not include('aaron')
   end
 
   it "should prepare to be serialized" do

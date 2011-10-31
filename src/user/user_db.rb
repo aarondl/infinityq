@@ -6,6 +6,7 @@ class UserDb
   def initialize
     @users = []
     @cache = {}
+    @nick_cache = {}
   end
 
   # Adds a user to the collection.
@@ -81,6 +82,30 @@ class UserDb
     return nil
   end
 
+  # Finds a user object on a server based
+  # on nickname.
+  #
+  # @param [Symbol] The server to look on.
+  # @param [String] The nickname to find.
+  # @return [User] A user object.
+  def find_by_nick(server_key, nick)
+    nick = nick.downcase
+    cached = @nick_cache.has_key?(server_key) ? @nick_cache[server_key][nick] : nil
+    return cached unless cached.nil?
+
+    @users.each do |u|
+      if u[server_key] != nil && u[server_key].nick != nil
+        if nick == u[server_key].nick.downcase
+          @nick_cache[server_key] = {} unless @nick_cache.has_key?(server_key)
+          @nick_cache[server_key][nick] = u
+          return u
+        end
+      end
+    end
+
+    return nil
+  end
+
   # Removes the host from the cache.
   #
   # @param [String] The host to invalidate.
@@ -89,11 +114,28 @@ class UserDb
     @cache.delete(host)
   end
 
+  # Removes a server or a nickname from the nick cache.
+  #
+  # @param [Symbol] The key of the server to invalidate.
+  # @param [String] The optional nickname to invalidate.
+  # @return [nil] Nil
+  def invalidate_nick_cache(server_key, nick = nil)
+    if nick == nil
+      @nick_cache.delete(server_key)
+      return
+    end
+    if @nick_cache.has_key?(server_key)
+      nick = nick.downcase
+      @nick_cache[server_key].delete(nick)
+    end
+  end
+
   # Flushes the lookup cache.
   #
   # @return [nil] Nil
   def flush_cache
     @cache.clear
+    @nick_cache.clear
   end
 
   attr_reader :users
