@@ -1,3 +1,5 @@
+require_relative 'extension' #Just so extensions don't have to
+
 # Hosts extensions, unloads them, initializes them
 # and manages calls into them.
 class ExtensionHost
@@ -5,12 +7,14 @@ class ExtensionHost
   # argument.
   #
   # @param [String] The addition to the load path if any.
+  # @param [Hash] The extension configurations.
   # @param [IrcServer] The IrcServer to load extensions with
   # @param [IrcProtoEvent] The IrcProtoEvent to load extensions with
   # @param [FunctionRegistrar] The FunctionRegistrar to load extensions with
   # @return [ExtensionHost] A new extension host instance.
-  def initialize(extension_path, server, irc_proto, fn_registrar)
+  def initialize(extension_path, extcfg, server, irc_proto, fn_registrar)
     @server = server
+    @extcfg = extcfg
     @irc_proto = irc_proto
     @fn_registrar = fn_registrar
     @extensions = {}
@@ -28,7 +32,8 @@ class ExtensionHost
     exts.each do |ext|
       load file_name(ext)
       sym = ext_sym(ext)
-      obj = Object.const_get(sym).new(@server, @irc_proto, @fn_registrar)
+      cfg = @extcfg != nil ? @extcfg[ext] : nil
+      obj = Object.const_get(sym).new(cfg, @server, @irc_proto, @fn_registrar)
       obj.ext_load if obj.respond_to?(:ext_load)
       @extensions[sym] = obj
     end

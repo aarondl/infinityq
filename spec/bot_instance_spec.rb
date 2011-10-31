@@ -9,6 +9,7 @@ describe "BotInstance" do
       name: 'InfinityQ', email: 'inf@inf.com',
       address: 'localhost',
       extensions: ['Test_2'], proto: 'irc.proto',
+      extensioncfg: {'Test1' => {test: :load}},
       extpath: __FILE__.gsub(/spec\/[a-z0-9_]+\.rb/i, 'extensions'),
       extprefix: '.', key: :gamesurge
     }

@@ -4,14 +4,14 @@ class Channel
   #
   # @param [Symbol] The server key.
   # @param [String] The name of the channel.
-  # @param [Bool] Explicit, ensures it will save or not
+  # @param [Bool] Whether or not this is a state only object.
   # @return [Channel] A new channel.
-  def initialize(server_key, name, explicit = false)
+  def initialize(server_key, name, stateonly = true)
     @server_key = server_key
     @name = name.downcase
     @users = {}
     @nicks = {}
-    @explicit = explicit
+    @stateonly = stateonly
   end
 
   # Adds a user to the channel.
@@ -23,6 +23,27 @@ class Channel
     throw StandardError, 'How did this happen?' if server_user.nil?
     @users[server_user.fullhost] = user
     @nicks[server_user.nick] = user
+  end
+
+  # Stores persistent data on the channel object.
+  #
+  # @param [Symbol, String] The key to this object.
+  # @param [Object] Some object to store.
+  # @return [nil] Nil
+  def store(key, value)
+    if @storage.nil?
+      @storage = {}
+    end
+    @storage[key] = value
+  end
+
+  # Fetches persistent data on the channel object.
+  #
+  # @param [Symbol, String] The key to this object.
+  # @return [Object] The object that was previously stored.
+  def fetch(key)
+    return nil if @storage.nil?
+    return @storage[key]
   end
 
   # Looks up a user by nick or by host.
@@ -39,6 +60,6 @@ class Channel
 
   attr_reader :name
   attr_reader :server_key
-  attr_accessor :explicit
+  attr_accessor :stateonly
 end
 

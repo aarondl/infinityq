@@ -16,6 +16,11 @@ describe "Channel" do
     @c.name.should eq('#c++')
   end
 
+  it "should have some persistent storage" do
+    @c.store(:key, :value)
+    @c.fetch(:key).should eq(:value)    
+  end
+
   it "should keep a list of users" do
     @c.add_user(@user)
     @c['aaron'].should eq(@user)

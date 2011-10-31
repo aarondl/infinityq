@@ -41,7 +41,7 @@ class ChannelDb
     @servers.each do |server_key, server|
       new_channels = {}
       server.each do |name, channel|
-        new_channels[name] = channel if channel.explicit
+        new_channels[name] = channel unless channel.stateonly
       end
 
       new_servers[server_key] = new_channels if new_channels.count > 0

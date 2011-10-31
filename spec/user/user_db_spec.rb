@@ -45,7 +45,7 @@ describe "UserDb" do
   it "should be able to flush the cache" do
     @u.find('~aaron@bitforge.ca').should eq(@user)
     @u.flush_cache
-    @u.instance_variable_get(:@cache).should be_empty    
+    @u.instance_variable_get(:@cache).should be_empty
   end
 
   it "should invalidate cache for a host" do

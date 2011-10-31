@@ -1,12 +1,11 @@
 require_relative '../../src/channel/channel_db'
 require_relative '../../src/channel/channel'
-require 'yaml'
 
 describe "ChannelDb" do
   before :each do
     @c = ChannelDb.new()
     @c.add(Channel.new(:gamesurge, '#C++'))
-    @c.add(Channel.new(:gamesurge, '#blackjack', true))
+    @c.add(Channel.new(:gamesurge, '#blackjack', false))
   end
 
   it "should keep a list of channels" do

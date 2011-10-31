@@ -17,6 +17,9 @@ describe "Bot" do
       ":extprefix: .\n" +
       ":extensions:\n" +
       "  -Test1\n" +
+      ":extensioncfg:\n" +
+      "  Test1:\n" +
+      "    :test: :load\n" +
       ":servers:\n" +
       "  :gamesurge:\n" +
       "    :address: irc.gamesurge.net\n" +

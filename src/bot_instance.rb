@@ -14,19 +14,20 @@ class BotInstance
   # @param [UserDb] A user database.
   # @param [ChannelDb] A channel database.
   # @return [BotInstance] A new BotInstance.
-  def initialize(config, userdb, chandb)
-    @server = IrcServer.new config[:address], config[:port]
-    @proto = IrcProtoEvent.new config[:proto], userdb, chandb, config[:key]
-    @core_events = CoreEvents.new @server, @proto, config[:nick],
-      config[:altnick], config[:email], config[:name]
-    @fn_registrar = FunctionRegistrar.new @proto, config[:extprefix]
-    @exthost = ExtensionHost.new config[:extpath], @server, @proto, @fn_registrar
-    @key = config[:key]
+  def initialize(c, userdb, chandb)
+    @server = IrcServer.new c[:address], c[:port]
+    @proto = IrcProtoEvent.new c[:proto], userdb, chandb, c[:key]
+    @core_events = CoreEvents.new @server, @proto, c[:nick],
+      c[:altnick], c[:email], c[:name]
+    @fn_registrar = FunctionRegistrar.new @proto, c[:extprefix]
+    @exthost = ExtensionHost.new c[:extpath], 
+      c[:extensioncfg], @server, @proto, @fn_registrar
+    @key = c[:key]
 
-    @config = config
+    @config = c
     @halt = false
 
-    @exthost.load_extensions *config[:extensions]
+    @exthost.load_extensions *c[:extensions]
   end
 
   # Starts this instance by creating a reading thread.

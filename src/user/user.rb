@@ -54,6 +54,27 @@ class ServerUser
     @channels = new_channels
   end
 
+  # Stores persistent data on the server user object.
+  #
+  # @param [Symbol, String] The key to this object.
+  # @param [Object] Some object to store.
+  # @return [nil] Nil
+  def store(key, value)
+    if @storage.nil?
+      @storage = {}
+    end
+    @storage[key] = value
+  end
+
+  # Fetches persistent data on the server user object.
+  #
+  # @param [Symbol, String] The key to this object.
+  # @return [Object] The object that was previously stored.
+  def fetch(key)
+    return nil if @storage.nil?
+    return @storage[key]
+  end
+
   # Adds a channel with optional access to
   # the server.
   #
@@ -153,6 +174,27 @@ class ChannelUser
   # @return [Bool] If the mode was found.
   def has_mode?(mode)
     return @modes.include?(mode)
+  end
+
+  # Stores persistent data on the channel user object.
+  #
+  # @param [Symbol, String] The key to this object.
+  # @param [Object] Some object to store.
+  # @return [nil] Nil
+  def store(key, value)
+    if @storage.nil?
+      @storage = {}
+    end
+    @storage[key] = value
+  end
+
+  # Fetches persistent data on the channel user object.
+  #
+  # @param [Symbol, String] The key to this object.
+  # @return [Object] The object that was previously stored.
+  def fetch(key)
+    return nil if @storage.nil?
+    return @storage[key]
   end
 
   # Wipes the state for the channel.
@@ -261,6 +303,33 @@ class User
   # @return [ServerUser] The server user object.
   def [](key)
     return @servers[key]
+  end
+
+  # Stores persistent data on the user object.
+  #
+  # @param [Symbol, String] The key to this object.
+  # @param [Object] Some object to store.
+  # @return [nil] Nil
+  def store(key, value)
+    obj = for_context(self) { |c| c.store(key, value); c }
+    return if obj != self 
+    if @storage.nil?
+      @storage = {}
+    end
+    @storage[key] = value
+  end
+
+  # Fetches persistent data on the user object.
+  #
+  # @param [Symbol, String] The key to this object.
+  # @return [Object] The object that was previously stored.
+  def fetch(key)
+    obj = for_context(self) { |c| c }
+    if obj != self
+      return obj.fetch(key)
+    end
+    return nil if @storage.nil?
+    return @storage[key]
   end
 
   # Sets the context for the access method.
