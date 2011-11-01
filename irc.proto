@@ -8,6 +8,11 @@ LIST [*#channellist [server]]
 INVITE [nickname] [channel]
 KICK *#channellist *nicklist [:comment]
 NICK nick
+WHOIS nick
+INVITE nick #channel
+JOIN *#channel [*key]
 USER username hostname servername :realname
 QUIT :msg
 433 nickinuse :message
+311 thisnick nick user host server :realname
+401 thisnick nick :msg

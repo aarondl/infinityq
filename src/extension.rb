@@ -64,6 +64,48 @@ class Extension
   end
 
   protected
+  # Whois' a user and returns the user object once CoreEvents
+  # sets it after the server returns the whois query.
+  #
+  # @param [String] Nickname.
+  # @param [Symbol] A callback method name.
+  # @return [nil] Nil
+  def fetch_user(nick, callback)
+    if @whois_token == nil
+      @whois_token = event(:e311, :whois_server_callback)
+    end
+    if @whois_queue == nil
+      @whois_queue = {}
+    end
+    if @whois_queue.has_key?(nick)
+      @whois_queue[nick].push(method(callback))
+    else
+      @whois_queue[nick] = [method(callback)]
+    end
+    raw irc.whois(nick)
+  end
+
+  # Handles a whois message and fetches the user object.
+  # Then empties the queue for all callbacks registered to
+  # wait for this callback.
+  #
+  # @param [Hash] The arguments from the e311 event.
+  # @return [nil] Nil
+  def whois_server_callback(args)
+    queue = @whois_queue[args[:nick]]
+    return if queue.nil?
+
+    fullhost = args[:nick] + '!' + args[:user] + '@' + args[:host]
+    user = @udb[fullhost]
+
+    return if user.nil?
+    queue.each do |c|
+      c.call user
+    end
+
+    @whois_queue.delete(args[:nick])
+  end
+
   # Writes a message to the server.
   #
   # @param [String, Array<String>] Messages to write to the server.
@@ -125,6 +167,13 @@ class Extension
   # @return [ChannelDb] The channel database object.
   def cdb
     return @cdb
+  end
+
+  # Helper method to get the botstate.
+  #
+  # @return [BotState] The botstate object.
+  def bot
+    return @botstate
   end
 
   # Helper method to get the server key.

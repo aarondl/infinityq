@@ -7,6 +7,9 @@ class Log
   # Critical failure, prepended with "Error: "
   Error = 2
 
+  # The default value of the provider.
+  @@provider = nil
+
   # Sets the log provider for the bot.
   #
   # @param [Object] Log provider. @see StdoutProvider for

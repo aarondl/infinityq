@@ -21,8 +21,8 @@ class BotInstance
     @botstate.nick = c[:nick]
     @server = IrcServer.new c[:address], c[:port]
     @proto = IrcProtoEvent.new c[:proto], userdb, chandb, c[:key]
-    @core_events = CoreEvents.new @server, @proto, @botstate, c[:nick],
-      c[:altnick], c[:email], c[:name]
+    @core_events = CoreEvents.new @server, c[:key], @proto, userdb, chandb,
+      @botstate, c[:nick], c[:altnick], c[:email], c[:name]
     @fn_registrar = FunctionRegistrar.new @proto, c[:extprefix]
     @exthost = ExtensionHost.new c[:extpath], 
       c[:extensioncfg], extdb, @server, @proto, @fn_registrar, @botstate, userdb, chandb

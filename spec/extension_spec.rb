@@ -4,6 +4,7 @@ require_relative '../src/function_registrar'
 require_relative '../src/irc_server'
 require_relative '../src/channel/channel_db'
 require_relative '../src/user/user_db'
+require_relative '../src/log'
 
 describe "Extension" do
   before :each do
@@ -101,6 +102,23 @@ describe "Extension" do
     @ext.f
   end
 
+  it "should have a mechanism to whois users without brutal syntax" do
+    @udb.should_receive(:[]).with('Aaron!~aaron@bitforge.ca') { User.new() }
+    class BotExtension
+      def whois(nick, method); fetch_user nick, method; end
+      def who(user); @test_whois = user; end
+      def who2(user); @test_whois2 = user; end
+      attr_accessor :test_whois, :test_whois2
+    end
+    @ext.whois('Aaron', :who)
+    @ext.whois('Aaron', :who2)
+    @ext.test_whois.should be_nil
+    @ext.test_whois2.should be_nil
+    @irc_proto.parse_proto('311 iq Aaron ~aaron bitforge.ca * :Aaron L')
+    @ext.test_whois.should be_a(User)
+    @ext.test_whois2.should be_a(User)
+  end
+
   it "should have a nice way of accessing various internals" do
     @extdb.should_receive(:[]=).with(:hello, :hi)
     @extdb.should_receive(:[]).with(:hello) { :hi }
@@ -111,6 +129,7 @@ describe "Extension" do
       def use_cfg; return cfg; end
       def use_udb; return udb; end
       def use_cdb; return cdb; end
+      def use_bot; return bot; end
       def use_serv_sym; return svr; end
     end
     @ext.use_db
@@ -118,6 +137,7 @@ describe "Extension" do
     @ext.use_cfg.should_not be_nil
     @ext.use_udb.should_not be_nil
     @ext.use_cdb.should_not be_nil
+    @ext.use_bot.should_not be_nil
     @ext.use_serv_sym.should eq(@irc_proto.server_key)
   end
 end

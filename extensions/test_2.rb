@@ -2,6 +2,24 @@ class Test_2 < Extension
   def ext_load
     function :both, :private, :add_su, 'super_me'
     function :both, :both, :access, 'access'
+    function :both, :both, :whois, 'whois'
+
+    event :invite, :inv
+  end
+
+  def inv(args)
+    if args[:nick] == bot.nick
+      raw irc.join([args[:channel].name])
+    end
+  end
+
+  def whois(args)
+    @args = args
+    fetch_user args[:msg], :whois_callback
+  end
+
+  def whois_callback(user)
+    raw irc.notice(@args[:from][svr].nick, user[svr].fullhost)
   end
 
   def add_su(args)
