@@ -218,6 +218,7 @@ class IrcProtoEvent
       user = @userdb.find(host)
       if user.nil?
         user = User.new()
+        user.add_host(host)
         @userdb.add(user)
       end
       user.add_server(@server_key) if user[@server_key].nil?
