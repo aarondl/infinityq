@@ -74,7 +74,7 @@ class IrcServer
       if msg.end_with?("\r\n")
         if truncated
           ret.push truncated + split[0]
-          ret.push split[1...split.length]
+          ret.concat split[1...split.length]
           return ret
         end
         return split
