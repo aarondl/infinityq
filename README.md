@@ -95,7 +95,7 @@ To run the tests either use guard with the provided guard file (just run guard) 
 used to generate code coverage statistics so don't use that.
 
 The tests have two flavors, a watered down version, and the full blown version. The reason for this is the networking and
-file system requirements. Set the environment variable INF_ENV="TRUE" to run the tests without touching the filesystem
+file system requirements. Set the environment variable INF_ENV="TEST" to run the tests without touching the filesystem
 or network. Leave that off to actually have it connect to the configured server and run the tests (caution very many
 connections to the server are made and you might get banned for it!) There are hardcoded files to avoid some of the reqs
 so you'll be able to find awkward copies of the config lying around in the test code.

@@ -318,7 +318,7 @@ class IrcProtoEvent
         return
       when :optional
         if offset < parts.length
-          args[name] = pull_args(rule[:args], parts[offset...parts.length], args, set_context)
+          pull_args(rule[:args], parts[offset...parts.length], args, set_context)
           offset += 1
         end
       else
