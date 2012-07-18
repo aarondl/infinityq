@@ -3,7 +3,7 @@ require_relative '../src/channel/channel_db'
 require_relative '../src/user/user_db'
 
 describe "BotInstance" do
-  before :all do
+  before :each do
     config = {
       nick: 'infinity', altnick: 'infinityq', 
       name: 'InfinityQ', email: 'inf@inf.com',
@@ -37,5 +37,22 @@ describe "BotInstance" do
     @b.thread.status.should eq('run')
     @b.halt
   end
+
+  it "should fire connect pseudoevents" do
+    connected = false
+    @b.proto.register(:connect, -> args { connected = true; @b.halt })
+    @b.start
+    @b.thread.join
+    connected.should be_true
+  end
+
+  it "should fire disconnect pseudoevents" do
+    disconnected = false
+    @b.proto.register(:disconnect, -> args { disconnected = true })
+    @b.start
+    @b.halt
+    disconnected.should be_true
+  end
+
 end
 
