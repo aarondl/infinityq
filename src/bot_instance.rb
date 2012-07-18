@@ -58,6 +58,7 @@ class BotInstance
   def halt
     @halt = true
     @server.disconnect
+    @proto.fire_pseudo(:disconnect, {})
     @thread.exit
   end
 
