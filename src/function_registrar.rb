@@ -51,6 +51,16 @@ class FunctionRegistrar
     matchspec = Regexp.new('^' + matchspec) if matchspec.kind_of?(String)
 
     localtoken = TokenGenerator::generate_token
+
+    unless access_required.nil?
+      unless access_required[:any_of].nil?
+        access_required[:any_of] = access_required[:any_of].downcase.chars.to_a
+      end
+      unless access_required[:all_of].nil?
+        access_required[:all_of] = access_required[:all_of].downcase.chars.to_a
+      end
+    end
+
     func[localtoken] = {match: matchspec, callback: method, access_req: access_required}
     return [msgtype, publicity, localtoken]
   end
@@ -151,10 +161,10 @@ class FunctionRegistrar
       return false if access < access_req[:access]
     end
     unless access_req[:any_of].nil?
-      return false unless access.has_any?(*access_req[:any_of].downcase.chars.to_a)
+      return false unless access.has_any?(*access_req[:any_of])
     end
     unless access_req[:all_of].nil?
-      return false unless access.has?(*access_req[:all_of].downcase.chars.to_a)
+      return false unless access.has?(*access_req[:all_of])
     end
 
     return true
