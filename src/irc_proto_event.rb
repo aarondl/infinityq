@@ -411,8 +411,8 @@ class IrcProtoEvent
         end
         arglist += ', ' unless first
         arglist += "#{rule[:name].to_s}"
-        arglist += (optional ? "=''" : '')
         if optional
+          arglist += "=''"
           body += " + (#{rule[:name].to_s}.empty? ? '' : ' #{prefix}' + #{rule[:name]}#{suffix})"
         else
           body += " + ' #{prefix}' + #{rule[:name]}#{suffix}"
