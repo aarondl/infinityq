@@ -4,7 +4,11 @@ describe "FileFactory" do
 
   it "creates new files" do #new and exists!
     temp = FileFactory.create(__FILE__, "r")
-    temp.should be_instance_of(File)
+    if ENV['INF_ENV'] == 'TEST'
+      temp.should be_instance_of(RSpec::Mocks::Mock)
+    else
+      temp.should be_instance_of(File)
+    end
     temp.close
   end
 

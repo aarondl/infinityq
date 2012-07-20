@@ -11,7 +11,7 @@ class FileFactory
     else
       require "rspec/mocks/standalone"
       RSpec::Mocks::setup(self)
-      return double("File", :class => "File")
+      return double("File", :close => nil, :closed? => true)
     end
   end
 
