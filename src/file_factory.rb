@@ -3,14 +3,11 @@
 class FileFactory
   # Creates a file handler / mock depending on the env variable.
   #
-  # @param [String] The path to the file being created.
-  # @param [String] The mode the File object will be in.
+  # @param [Array] Path and permission arguments.
   # @return [File] New File Object.
-  def self.create(path, perm = nil)
+  def self.create(*args)
     if ENV['INF_ENV'] != 'TEST'
-      unless perm.nil?
-        return File.new(path, perm)
-       end
+      return File.new(*args)
     else
       require "rspec/mocks/standalone"
       RSpec::Mocks::setup(self)
