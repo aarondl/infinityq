@@ -6,6 +6,7 @@ require_relative 'exceptions'
 require_relative 'store'
 require_relative 'channel/channel_db'
 require_relative 'user/user_db'
+require_relative 'file_factory'
 
 # Ruby IRC Bot main class
 class Bot
@@ -50,12 +51,13 @@ class Bot
   # @param [Block] A block that uses the file handles.
   # @return [nil] Nil
   def self.prep_db_read(&blk)
-    userio = File.exists?(DbPath + UserDbFile) ? File.new(DbPath + UserDbFile) : nil
-    chanio = File.exists?(DbPath + ChanDbFile) ? File.new(DbPath + ChanDbFile) : nil
-    extio = File.exists?(DbPath + ExtensionDbFile) ? File.new(DbPath + ExtensionDbFile) : nil
+    userio = FileFactory.exists?(DbPath + UserDbFile) ? FileFactory.create(DbPath + UserDbFile) : nil
+    chanio = FileFactory.exists?(DbPath + ChanDbFile) ? FileFactory.create(DbPath + ChanDbFile) : nil
+    extio = FileFactory.exists?(DbPath + ExtensionDbFile) ? FileFactory.create(DbPath + ExtensionDbFile) : nil
     yield userio, chanio, extio
     userio.close unless userio.nil?
     chanio.close unless chanio.nil?
+    extio.close unless extio.nil?
   end
 
   # Reads the user and channel database if available.
@@ -93,9 +95,9 @@ class Bot
       Dir::mkdir(DbPath)
     end
 
-    userio = File.new(DbPath + UserDbFile, 'w+')
-    chanio = File.new(DbPath + ChanDbFile, 'w+')
-    extio = File.new(DbPath + ExtensionDbFile, 'w+')
+    userio = FileFactory.create(DbPath + UserDbFile, 'w+')
+    chanio = FileFactory.create(DbPath + ChanDbFile, 'w+')
+    extio = FileFactory.create(DbPath + ExtensionDbFile, 'w+')
     yield userio, chanio, extio
     userio.close
     chanio.close
