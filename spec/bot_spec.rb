@@ -123,5 +123,30 @@ describe "Bot" do
     Bot::chandb[:gamesurge, '#c++'].should be_a(Channel)
     Bot::extdb[:test].should eq(:test)
   end
+
+  it "should close all open file handles in prep_db_read" do
+    userio = nil, chanio = nil, extio = nil
+    Bot::prep_db_read do |u, c, e|
+      userio = u
+      chanio = c
+      extio = e
+    end
+    userio.closed?.should be_true
+    chanio.closed?.should be_true
+    extio.closed?.should be_true
+  end
+
+  it "should close all open file handles in prep_db_write" do
+    userio = nil, chanio = nil, extio = nil
+    Bot::prep_db_write do |u, c, e|
+      userio = u
+      chanio = c
+      extio = e
+    end
+    userio.closed?.should be_true
+    chanio.closed?.should be_true
+    extio.closed?.should be_true
+  end
+
 end
 
