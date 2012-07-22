@@ -3,7 +3,6 @@ require_relative '../src/irc_server'
 describe "IrcServer" do
   before :each do
     @s = IrcServer.new('localhost')
-    @s.state?.should eq(IrcServer::State::Fresh)
     @s.connect
   end
 
