@@ -146,6 +146,7 @@ class ChannelUser < Store
   # @param [String] The mode to check for.
   # @return [Bool] If the mode was found.
   def has_mode?(mode)
+    return false if @modes.nil?
     return @modes.include?(mode)
   end
 
@@ -162,6 +163,7 @@ class ChannelUser < Store
   # @param [Block] A block to handle each mode.
   # @return [nil] Nil
   def each_mode(&blk)
+    return if @modes.nil?
     @modes.each_char do |c|
       yield c
     end

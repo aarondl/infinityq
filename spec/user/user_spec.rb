@@ -73,6 +73,11 @@ describe "User" do
         @u.wipe_all_state
         @s.online?.should be_false
         @s['#C++'].online?.should be_false
+        nomodes = true
+        @s['#C++'].each_mode do
+          nomodes = false
+        end
+        nomodes.should be_true
       end
 
       it "should set channel state" do
@@ -85,6 +90,7 @@ describe "User" do
         @c.online?.should be_true
         @c.wipe_state
         @c.online?.should be_false
+        @c.has_mode?('o').should be_false
       end
 
       it "should allow removal of a channel" do
