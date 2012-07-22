@@ -10,10 +10,8 @@ describe "UserDb" do
     @user = User.new(false)
     @user.add_host(/.*@bitforge\.ca$/)
     @user.global_access.power = 10
-    @user.global_access[Access::A]
     @user.add_server(:gamesurge)
     @user[:gamesurge].set_state(@host)
-
 
     @u.add(@user)
   end
