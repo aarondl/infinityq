@@ -28,14 +28,29 @@ class Bot
   # @param [String] The path to the config file, falls back to Bot::ConfigPath
   # @return [nil] Nil
   def self.read_config(path = nil)
-    hash = YAML::load_file(path || ConfigPath)
+    file = FileFactory.create(path || ConfigPath)
+    hash = YAML::load(file.read)
+    file.close
+    set_config(hash)
+    validate_config
+    do_config_cascade
+  end
+
+  # Sets the config to a hash value.
+  #
+  # @param [Hash] The hash to set the value to.
+  # @return [nil] Nil
+  def self.set_config(hash)
     Config.clear
     hash.each do |k, v|
       Config[k] = v
     end
-    
-    validate_config
+  end
 
+  # Cascades the configuration values into each server
+  #
+  # @return [nil] Nil
+  def self.do_config_cascade
     cascading = [:extensions, :extensioncfg, :extprefix, :extpath, :proto, :nick, :altnick, :name, :email]
     Config[:servers].each do |k, v|
       cascading.each do |attrib|

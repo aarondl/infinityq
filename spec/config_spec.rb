@@ -2,36 +2,29 @@ require 'yaml'
 require_relative '../src/bot'
 
 describe "Bot" do
+  Config = <<-EOF
+    :nick: infinityq
+    :altnick: infinityqq
+    :name: Infinity Ruby Bot
+    :email: inf_bot@gmail.com
+    :proto: irc.proto
+    :extpath: .
+    :extprefix: .
+    :extensions:
+      -Test1
+    :extensioncfg:
+      Test1:
+        :test: :load
+    :servers:
+      :gamesurge:
+        :address: irc.gamesurge.net
+        :port: 6667
+        :nick: infinity_
+        :altnick: infinity__
+  EOF
+
   before :each do
-    init_config
-  end
-
-  def init_config
-    config = YAML::load(
-      ":nick: infinityq\n" +
-      ":altnick: infinityqq\n" +
-      ":name: Infinity Ruby Bot\n" +
-      ":email: inf_bot@gmail.com\n" +
-      ":proto: irc.proto\n" +
-      ":extpath: .\n" +
-      ":extprefix: .\n" +
-      ":extensions:\n" +
-      "  -Test1\n" +
-      ":extensioncfg:\n" +
-      "  Test1:\n" +
-      "    :test: :load\n" +
-      ":servers:\n" +
-      "  :gamesurge:\n" +
-      "    :address: irc.gamesurge.net\n" +
-      "    :port: 6667\n" +
-      "    :nick: infinity_\n" +
-      "    :altnick: infinity__\n"
-    )
-
-    Bot::Config.clear
-    config.each do |k, v|
-      Bot::Config[k] = v
-    end
+    Bot::set_config(YAML::load(Config))
   end
 
   class Hash
@@ -58,21 +51,22 @@ describe "Bot" do
   end
 
   it "should die if a config file cannot be found" do
-    expect {
-      Bot::read_config 'miscellaneousrandompath.yml'
-    }.to raise_error(Errno::ENOENT)
+    if ENV['INF_ENV'] != 'TEST'
+      expect {
+        Bot::read_config 'miscellaneousrandompath.yml'
+      }.to raise_error(Errno::ENOENT)
+    end
   end
 
   it "should read a config file" do
-    c = YAML::load_file(Bot::ConfigPath)
+    FileFactory::preload(Config)
     Bot::read_config
-    Bot::Config[:nick].should eq(c[:nick])
+    Bot::Config[:nick].should_not be_nil 
   end
 
   it "should copy global values into the server-specific configs" do
-    c = YAML::load_file(Bot::ConfigPath)
-    Bot::read_config
-    Bot::Config[:servers][:bitforge][:extensions].should eq(Bot::Config[:extensions])
+    Bot::do_config_cascade
+    Bot::Config[:servers][:gamesurge][:extensions].should eq(Bot::Config[:extensions])
   end
 
   it "should die if no servers exist" do
