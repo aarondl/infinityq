@@ -11,8 +11,16 @@ class FileFactory
     else
       require "rspec/mocks/standalone"
       RSpec::Mocks::setup(self)
-      return double("File", :close => nil, :closed? => true)
+      return double("File", :close => nil, :closed? => true, :read => @@data)
     end
+  end
+
+  # Preloads the mock file with data
+  #
+  # @param [String] The data to return in read.
+  # @return [nil] Nil
+  def self.preload(data)
+    @@data = data
   end
 
   # Checks whether file exists depending on env variable.

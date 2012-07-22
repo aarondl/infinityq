@@ -1,8 +1,21 @@
 require_relative '../src/file_factory'
 
 describe "FileFactory" do
+  it "should preload and read test data" do
+    FileFactory::preload('test')
+    old = ENV['INF_ENV']
+    ENV['INF_ENV'] = 'TEST'
+    file = FileFactory::create(__FILE__)
+    file.read.should eq('test')
+    file.close
+    ENV['INF_ENV'] = ''
+    file = FileFactory::create(__FILE__)
+    file.read.should_not eq('test')
+    file.close
+    ENV['INF_ENV'] = old
+  end
 
-  it "creates new files" do #new and exists!
+  it "creates new files" do
     old = ENV['INF_ENV']
     ENV['INF_ENV'] = 'TEST'
     temp = FileFactory.create(__FILE__, "r")
