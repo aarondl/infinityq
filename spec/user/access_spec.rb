@@ -89,7 +89,7 @@ describe "Access" do
     d.has?(Access::A, Access::B, Access::C, Access::D).should be_true
     e = Access::merge(c, b)
     e.power.should eq(50)
-    d.has?(Access::B, Access::C, Access::D).should be_true
+    e.has?(Access::B, Access::C, Access::D).should be_true
   end
 
   it "should not have awful output when tostring'd" do
